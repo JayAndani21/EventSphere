@@ -1,53 +1,66 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, User, Building } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import '../styles/LoginPage.css';
+import { Link, useNavigate } from 'react-router-dom';
 import ParticlesBackground from '../components/ParticlesBackground';
- // particles
+import '../styles/LoginPage.css';
 
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [userType, setUserType] = useState('attendee');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Login attempt:', { email, password, userType });
-  };
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Login successful! Redirecting...');
+        console.log('User:', data.user);
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userRole', data.user.role);
+        localStorage.setItem('userEmail', data.user.email);
+
+        setTimeout(() => navigate('/'), 2000); // redirect after 2 seconds
+      } else {
+        toast.error(data.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Something went wrong. Please try again.');
+    }
+  };
+
   return (
     <div className="login-container">
-        <ParticlesBackground />
-      {/* Left Side - Conference Image */}
+      <ParticlesBackground />
+      <ToastContainer position="top-right" autoClose={3000} pauseOnHover theme="colored" />
+
+      {/* Left Side */}
       <div className="login-left">
         <div className="login-overlay">
-          {/* <div className="logo-section"> */}
-            {/* <div className="logo">
-              <div className="logo-circle"></div>
-              <span className="brand-text">EventSphere</span>
-            </div> */}
-          {/* </div> */}
-          
           <div className="testimonial">
             <h2>Your gateway to seamless event experiences.</h2>
-            {/* <p>
-              "EventSphere transformed how we manage our conferences. The intuitive interface and powerful features 
-              made our last event a huge success!"
-            </p> */}
-            {/* <div className="testimonial-author">
-              — Sarah Chen, Lead Organizer at TechConnect
-            </div> */}
           </div>
-          
-          {/* <div className="copyright">
-            © 2023 EventSphere. All rights reserved.
-          </div> */}
         </div>
       </div>
 
@@ -59,23 +72,20 @@ const LoginPage = () => {
             <p>Your gateway to seamless event experiences.</p>
           </div>
 
-          {/* User Type Toggle */}
           <div className="user-type-toggle">
             <button
               type="button"
               className={`toggle-btn ${userType === 'attendee' ? 'active' : ''}`}
               onClick={() => setUserType('attendee')}
             >
-              <User size={16} />
-              Attendee
+              <User size={16} /> Attendee
             </button>
             <button
               type="button"
               className={`toggle-btn ${userType === 'organizer' ? 'active' : ''}`}
               onClick={() => setUserType('organizer')}
             >
-              <Building size={16} />
-              Organizer
+              <Building size={16} /> Organizer
             </button>
           </div>
 

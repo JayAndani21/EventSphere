@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../styles/SignupPage.css';
 
 const SignupPage = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -22,22 +27,50 @@ const SignupPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Signup attempt:', formData);
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Signup successful! Redirecting to login...');
+        setTimeout(() => navigate('/login'), 2000); // redirect after 2 seconds
+      } else {
+        toast.error(data.message || 'Signup failed');
+      }
+    } catch (err) {
+      console.error('Signup error:', err);
+      toast.error('Something went wrong. Please try again.');
+    }
   };
 
   return (
     <div className="signup-container">
+      <ToastContainer position="top-right" autoClose={3000} pauseOnHover theme="colored" />
+
       <div className="signup-content">
         {/* Left Panel */}
         <div className="signup-left">
           <div className="left-content">
             <div className="logo-section">
-              <div className="main-logo">
-                {/* <div className="main-logo-circle" />   */}
-                {/* <span className="logo-text">EventSphere</span> */}
-              </div>
+              <div className="main-logo"></div>
             </div>
 
             <div className="hero-text">
@@ -48,9 +81,7 @@ const SignupPage = () => {
               </p>
             </div>
 
-            <div className="image-section">
-              {/* <img src="/signup-image.png" alt="Events" className="left-image" /> */}
-            </div>
+            <div className="image-section">{/* Optional image */}</div>
           </div>
         </div>
 
@@ -114,7 +145,6 @@ const SignupPage = () => {
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
-                  
                 </div>
               </div>
 
@@ -131,13 +161,6 @@ const SignupPage = () => {
                     placeholder="••••••••"
                     required
                   />
-                  {/* <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button> */}
                 </div>
               </div>
 
@@ -179,7 +202,7 @@ const SignupPage = () => {
               </button>
 
               <div className="login-link">
-                Already have an account? <a href="#login">Login</a>
+                Already have an account? <a href="/login">Login</a>
               </div>
             </form>
           </div>

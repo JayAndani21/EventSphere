@@ -92,6 +92,7 @@
   border: 1px solid #ccc;
   border-radius: 8px; 
   background: #f9f9f9;
+  /* color: black; */
   /* Added padding to the input container to make the icons and input look better */
   /* padding: 8px 12px; */
 }
@@ -103,11 +104,12 @@
   padding-left: 10px;
   background: transparent;
   /* Adjusting input padding for better alignment with icons */
-  padding: 0;
+  padding: 1rem;
+   color: black;
 }
 
 .input-icon {
-  color: #666;
+  color: #0c0b0b;
 }
 .password-input-wrapper {
   position: relative;
@@ -143,6 +145,7 @@
 .role-toggle {
   display: flex;
   gap: 10px;
+  color: #666;
 }
 
 .role-btn {
@@ -153,6 +156,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s;
+  color:#666;
 }
 
 .role-btn.active {
@@ -167,6 +171,7 @@
   align-items: flex-start;
   gap: 10px;
   font-size: 0.9rem;
+  color:#666;
 }
 
 .terms-checkbox a {
@@ -196,6 +201,7 @@
   margin-top: 20px;
   text-align: center;
   font-size: 0.95rem;
+  color: #666;
 }
 
 .login-link a {
