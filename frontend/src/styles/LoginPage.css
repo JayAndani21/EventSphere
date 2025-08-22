@@ -82,21 +82,24 @@
 }
 
 /* Toggle (Purple Version) */
+
 .user-type-toggle {
   display: flex;
-  border-radius: 0.75rem;
-  background-color: #f1f5f9;
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
+  background: none;
+  border: none;
+  border-radius: 0;
+  gap: 0.10rem;
   margin-bottom: 1.5rem;
+  box-shadow: none;
 }
+
 
 .toggle-btn {
   flex: 1;
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   font-weight: 600;
-  background: transparent;
+  background: #f1f5f9;
   border: none;
   color: #6b7280;
   display: flex;
@@ -104,12 +107,27 @@
   justify-content: center;
   gap: 0.5rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.3s, color 0.3s;
+  outline: none;
+  box-shadow: none;
+  border-radius: 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Remove any border between toggle buttons */
+.toggle-btn + .toggle-btn {
+  margin-left: 0;
 }
 
 .toggle-btn.active {
   background-color: #8b5cf6;
   color: white;
+  outline: none;
+  box-shadow: 0 2px 8px 0 rgba(139,92,246,0.08);
+  border: none;
+  border-radius: 0.75rem;
+  z-index: 2;
 }
 
 .toggle-btn:hover:not(.active) {
@@ -130,6 +148,7 @@
   color: #374151;
 }
 
+
 .form-group input {
   padding: 0.75rem;
   border: 1px solid #d1d5db;
@@ -137,6 +156,11 @@
   background: #f9fafb;
   font-size: 1rem;
   width: 100%;
+  box-sizing: border-box;
+}
+
+.login-form input[type="email"] {
+  padding-right: 2.5rem; /* match password input's right padding for visual consistency */
 }
 
 .form-group input:focus {
@@ -146,19 +170,49 @@
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
 }
 
+.login-form input[type="email"],
+.login-form input[type="password"] {
+  color: #222; /* or any visible color */
+  background: #fff; /* optional: ensures contrast */
+}
+
+/* Ensure password input text is always visible */
+.login-form input[type="password"],
+.login-form input[type="text"] {
+  color: #222;
+  background: #fff;
+}
+
+
+
 .password-input-container {
   position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container input {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 2.5rem; /* space for the eye button */
 }
 
 .password-toggle {
   position: absolute;
   top: 50%;
-  right: 0.75rem;
+  right: 1rem;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
   color: #8b5cf6;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  z-index: 2;
 }
 
 /* Links and Buttons */

@@ -118,12 +118,12 @@
   border: 1px solid #ccc;
   border-radius: 8px;
   background: #f9f9f9;
-  padding: 0 12px;
+  padding: 0;
 }
 
 .password-input-wrapper input {
   flex: 1;
-  padding: 10px;
+  padding: 10px 12px;
   border: none;
   outline: none;
   background: transparent;
@@ -135,7 +135,9 @@
   top: 50%;
   transform: translateY(-50%);
   background: none;
-  border: none;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   cursor: pointer;
   color: #7c3aed; /* Or match your active color */
   font-size: 1rem;
@@ -144,25 +146,30 @@
 
 .role-toggle {
   display: flex;
-  gap: 10px;
+  gap: 2px;
   color: #666;
 }
 
 .role-btn {
   flex: 1;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: none;
   background: #f3f3f3;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s;
-  color:#666;
+  color: #666;
+  outline: none;
+  box-shadow: none;
+  transition: background 0.3s, color 0.3s;
 }
 
 .role-btn.active {
   background: #7c3aed;
   color: white;
   font-weight: bold;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .terms-checkbox {

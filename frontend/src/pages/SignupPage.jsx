@@ -150,7 +150,7 @@ const SignupPage = () => {
 
               <div className="form-group">
                 <label htmlFor="confirmPassword">Confirm Password</label>
-                <div className="input-container">
+                <div className="input-container password-input-wrapper">
                   <Lock className="input-icon" size={20} />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
@@ -161,6 +161,13 @@ const SignupPage = () => {
                     placeholder="••••••••"
                     required
                   />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
               </div>
 

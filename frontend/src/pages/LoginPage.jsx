@@ -24,9 +24,7 @@ const LoginPage = () => {
     try {
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
@@ -40,7 +38,10 @@ const LoginPage = () => {
         localStorage.setItem('userRole', data.user.role);
         localStorage.setItem('userEmail', data.user.email);
 
-        setTimeout(() => navigate('/'), 2000); // redirect after 2 seconds
+        setTimeout(() => {
+          navigate('/');
+          window.location.reload(); // Reload the page after navigation
+        }, 1000); // redirect and reload after 1 second
       } else {
         toast.error(data.message || 'Login failed');
       }
