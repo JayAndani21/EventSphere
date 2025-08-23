@@ -200,19 +200,34 @@
 
 .password-toggle {
   position: absolute;
-  top: 50%;
   right: 1rem;
+  top: 50%;
   transform: translateY(-50%);
-  background: none;
+  background: transparent;
   border: none;
+  padding: 0.25rem;
   cursor: pointer;
   color: #8b5cf6;
-  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
   z-index: 2;
+}
+
+.password-toggle:hover {
+  color: #7c3aed;
+  background: transparent;
+}
+
+.password-toggle:focus {
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.password-toggle:active {
+  background: transparent;
+  color: #7c3aed;
 }
 
 /* Links and Buttons */

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import '../styles/Navbar.css';
 
-const Navbar = () => {
+const Navbar = ({ additionalLinks = [] }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
@@ -57,10 +57,13 @@ const Navbar = () => {
         </div>
 
         <div className={`navbar-menu ${isMenuOpen ? 'active' : ''}`}>
-          <Link to="/" className="navbar-item active">Home</Link>
+          <Link to={isLoggedIn ? "/home" : "/"} className="navbar-item active">Home</Link>
           <a href="#features" className="navbar-item">Features</a>
           <a href="#events" className="navbar-item">Events</a>
           <a href="#contact" className="navbar-item">Contact</a>
+          {additionalLinks.map((link, index) => (
+            <Link key={index} to={link.to} className="navbar-item">{link.text}</Link>
+          ))}
         </div>
 
         <div className="navbar-auth" style={{ position: 'relative' }}>

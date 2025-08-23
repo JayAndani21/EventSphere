@@ -7,8 +7,13 @@ const generateToken = require('../utils/generateToken');
 exports.signup = async (req, res) => {
   const { fullName, email, password, role } = req.body;
   try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'User already exists' });
+    // Check if email exists (case-insensitive)
+    const existingUser = await User.findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
+    if (existingUser) {
+      return res.status(409).json({
+        message: 'Email is already registered. Please use a different email or try logging in.'
+      });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ fullName, email, password: hashedPassword, role });
@@ -23,13 +28,20 @@ exports.signup = async (req, res) => {
 
 // Login controller
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, userType } = req.body;
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
+    // Check if user type matches
+    if (userType && user.role.toLowerCase() !== userType.toLowerCase()) {
+      return res.status(400).json({ 
+        message: `Incorrect user type selected. You are registered as an ${user.role}.`
+      });
+    }
 
     const token = generateToken(user._id);
     res.status(200).json({ token, user: { id: user._id, fullName: user.fullName, email, role: user.role } });

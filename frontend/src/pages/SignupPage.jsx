@@ -13,8 +13,9 @@ const SignupPage = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'attendee'
+    role: '' // user must actively choose Attendee or Organizer
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
@@ -27,13 +28,41 @@ const SignupPage = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const validateForm = () => {
+    if (!formData.fullName.trim()) {
+      toast.error('Full name is required');
+      return false;
+    }
+    if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      toast.error('Please enter a valid email');
+      return false;
+    }
+    if (formData.password.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return false;
+    }
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      toast.error('Password must contain uppercase, lowercase, and a number');
+      return false;
+    }
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
-      return;
+      return false;
     }
+    if (!formData.role) {
+      toast.error('Please select a role (Organizer or Attendee)');
+      return false;
+    }
+    if (!agreeToTerms) {
+      toast.error('You must agree to the Terms & Privacy Policy');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
 
     try {
       const response = await fetch('http://localhost:5000/api/auth/signup', {
@@ -50,8 +79,8 @@ const SignupPage = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success('Signup successful! Redirecting to login...');
-        setTimeout(() => navigate('/login'), 2000); // redirect after 2 seconds
+        toast.success('Signup successful! Redirecting...');
+        setTimeout(() => navigate('/login'), 2000);
       } else {
         toast.error(data.message || 'Signup failed');
       }
@@ -72,7 +101,6 @@ const SignupPage = () => {
             <div className="logo-section">
               <div className="main-logo"></div>
             </div>
-
             <div className="hero-text">
               <h1>Your Gateway to Unforgettable Events</h1>
               <p>
@@ -80,8 +108,6 @@ const SignupPage = () => {
                 EventSphere brings people together.
               </p>
             </div>
-
-            <div className="image-section">{/* Optional image */}</div>
           </div>
         </div>
 
@@ -93,6 +119,7 @@ const SignupPage = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="signup-form">
+              {/* Full Name */}
               <div className="form-group">
                 <label htmlFor="fullName">Full Name</label>
                 <div className="input-container">
@@ -104,11 +131,11 @@ const SignupPage = () => {
                     value={formData.fullName}
                     onChange={handleInputChange}
                     placeholder="John Doe"
-                    required
                   />
                 </div>
               </div>
 
+              {/* Email */}
               <div className="form-group">
                 <label htmlFor="email">Email</label>
                 <div className="input-container">
@@ -120,11 +147,11 @@ const SignupPage = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="john.doe@example.com"
-                    required
                   />
                 </div>
               </div>
 
+              {/* Password */}
               <div className="form-group">
                 <label htmlFor="password">Password</label>
                 <div className="input-container password-input-wrapper">
@@ -136,7 +163,6 @@ const SignupPage = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="••••••••"
-                    required
                   />
                   <button
                     type="button"
@@ -148,6 +174,7 @@ const SignupPage = () => {
                 </div>
               </div>
 
+              {/* Confirm Password */}
               <div className="form-group">
                 <label htmlFor="confirmPassword">Confirm Password</label>
                 <div className="input-container password-input-wrapper">
@@ -159,7 +186,6 @@ const SignupPage = () => {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     placeholder="••••••••"
-                    required
                   />
                   <button
                     type="button"
@@ -171,6 +197,7 @@ const SignupPage = () => {
                 </div>
               </div>
 
+              {/* Role Selection */}
               <div className="form-group">
                 <label>Role</label>
                 <div className="role-toggle">
@@ -191,13 +218,13 @@ const SignupPage = () => {
                 </div>
               </div>
 
+              {/* Terms */}
               <div className="terms-checkbox">
                 <input
                   type="checkbox"
                   id="terms"
                   checked={agreeToTerms}
                   onChange={(e) => setAgreeToTerms(e.target.checked)}
-                  required
                 />
                 <label htmlFor="terms">
                   I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a>
