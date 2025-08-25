@@ -1,10 +1,58 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Ticket,
+  Bell,
+  MessageCircle,
+  Calendar,
+  Users,
+  BarChart3,
+} from "lucide-react"; // ✅ Import icons for features
 import "../styles/OrganizerDashboard.css";
 
 const OrganizerDashboard = () => {
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
+
+  // ✅ Features section data (same as HomePage)
+  const features = [
+    {
+      icon: <Ticket size={32} />,
+      title: "Digital Ticketing",
+      description:
+        "Streamline entry with secure, contactless digital tickets and effortless guest management.",
+    },
+    {
+      icon: <Bell size={32} />,
+      title: "Real-time Notifications",
+      description:
+        "Keep attendees informed with instant updates for schedule changes, updates, and reminders.",
+    },
+    {
+      icon: <MessageCircle size={32} />,
+      title: "AI Chatbot Support",
+      description:
+        "Provide instant assistance and answers to common questions with our intelligent AI chatbot.",
+    },
+    {
+      icon: <Calendar size={32} />,
+      title: "Calendar Reminders",
+      description:
+        "Effortless integration with calendars for automated reminders and schedule management.",
+    },
+    {
+      icon: <Users size={32} />,
+      title: "Attendee Engagement",
+      description:
+        "Foster community with interactive polls, live Q&A, and social networking features.",
+    },
+    {
+      icon: <BarChart3 size={32} />,
+      title: "Analytics & Insights",
+      description:
+        "Gain valuable data on event performance, attendance patterns, and engagement metrics.",
+    },
+  ];
 
   useEffect(() => {
     fetchEvents();
@@ -145,6 +193,24 @@ const OrganizerDashboard = () => {
                 </div>
               ))
             )}
+          </div>
+        </section>
+
+        {/* ✅ Features Section (reused from HomePage) */}
+        <section className="features-section">
+          <div className="features-container">
+            <div className="section-header">
+              <h2 className="section-title">Empower Your Events with EventSphere</h2>
+            </div>
+            <div className="features-grid">
+              {features.map((feature, index) => (
+                <div key={index} className="feature-card">
+                  <div className="feature-icon">{feature.icon}</div>
+                  <h3 className="feature-title">{feature.title}</h3>
+                  <p className="feature-description">{feature.description}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       </div>

@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* generic helpers (if not already present) */
+body {
+  background: var(--bg-light);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-primary);
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;

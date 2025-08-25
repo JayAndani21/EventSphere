@@ -1,41 +1,54 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage'
-import SignupPage from './pages/SignupPage';
-import AttendeeDashboard from './pages/AttendeeDashboard';
-import OrganizerDashboard from './pages/OrganizerDashboard';
-import Navbar from './components/Navbar';
+// src/App.jsx
+import React, { useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+  Navigate,
+} from "react-router-dom";
 
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import AttendeeDashboard from "./pages/AttendeeDashboard";
+import OrganizerDashboard from "./pages/OrganizerDashboard";
+import CreateContest from "./pages/CreateContest";
+import Navbar from "./components/Navbar";
 
-// ProtectedRoute component
+/* ───────────────────────── Protected wrapper ───────────────────────── */
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token) {
-      navigate('/login');
-    }
+    if (!token) navigate("/login");
   }, [token, navigate]);
 
   return token ? children : null;
 };
 
-// HomeRedirect component for handling home navigation when logged in
+/* ──────────────────────── role-based home redirect ─────────────────── */
 const HomeRedirect = () => {
-  const userRole = localStorage.getItem('userRole');
-  return <Navigate to={userRole === 'organizer' ? '/organizer-dashboard' : '/attendee-dashboard'} replace />;
+  const role = localStorage.getItem("userRole");
+  return (
+    <Navigate
+      to={role === "organizer" ? "/organizer-dashboard" : "/attendee-dashboard"}
+      replace
+    />
+  );
 };
 
-// Layout component that includes Navbar
+/* ───────────────────────── Navbar + outlet layout ──────────────────── */
 const Layout = ({ children }) => {
-  const userRole = localStorage.getItem('userRole');
-  const additionalLinks = userRole === 'organizer' 
-    ? [{ to: "/organize-event", text: "Organize Event" }]
-    : userRole === 'attendee'
-    ? [{ to: "/contests", text: "Contests" }]
-    : [];
+  const role = localStorage.getItem("userRole");
+
+  const additionalLinks =
+    role === "organizer"
+      ? [{ to: "/organize-event", text: "Organize Event" }]
+      : role === "attendee"
+      ? [{ to: "/contests", text: "Contests" }]
+      : [];
 
   return (
     <>
@@ -45,52 +58,81 @@ const Layout = ({ children }) => {
   );
 };
 
-function App() {
+/* ────────────────────────────── App root ───────────────────────────── */
+export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Public routes with Layout */}
-        <Route path="/" element={
-          <Layout>
-            <HomePage />
-          </Layout>
-        } />
-        <Route path="/login" element={
-          <Layout>
-            <LoginPage />
-          </Layout>
-        } />
-        <Route path="/signup" element={
-          <Layout>
-            <SignupPage />
-          </Layout>
-        } />
-
-        {/* Protected routes with Layout */}
-        <Route path="/attendee-dashboard" element={
-          <ProtectedRoute>
+        {/* ── public ────────────────────────────────────────────── */}
+        <Route
+          path="/"
+          element={
             <Layout>
-              <AttendeeDashboard />
+              <HomePage />
             </Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/organizer-dashboard" element={
-          <ProtectedRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
             <Layout>
-              <OrganizerDashboard />
+              <LoginPage />
             </Layout>
-          </ProtectedRoute>
-        } />
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <Layout>
+              <SignupPage />
+            </Layout>
+          }
+        />
 
-        {/* Redirect route for home when logged in */}
-        <Route path="/home" element={
-          <ProtectedRoute>
-            <HomeRedirect />
-          </ProtectedRoute>
-        } />
+        {/* ── protected dashboards ─────────────────────────────── */}
+        <Route
+          path="/attendee-dashboard"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <AttendeeDashboard />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organizer-dashboard"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <OrganizerDashboard />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ── protected contest builder ─────────────────────────── */}
+        <Route
+          path="/organize-event"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CreateContest />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ── role-aware home redirect for logged-in users ───────── */}
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <HomeRedirect />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
 }
-
-export default App;
