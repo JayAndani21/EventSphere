@@ -13,51 +13,75 @@ const SignupPage = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: '' // user must actively choose Attendee or Organizer
+    role: ''
   });
 
+  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
+  // 🔹 Validate single field
+  const validateField = (name, value) => {
+    switch (name) {
+      case 'fullName':
+        if (!value.trim()) return 'Full name is required';
+        break;
+
+      case 'email':
+        if (!/\S+@\S+\.\S+/.test(value)) return 'Please enter a valid email';
+        break;
+
+      case 'password':
+        if (value.length < 8) return 'Password must be at least 8 characters';
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value))
+          return 'Password must include uppercase, lowercase, and a number';
+        break;
+
+      case 'confirmPassword':
+        if (value !== formData.password) return 'Passwords do not match';
+        break;
+
+      default:
+        return '';
+    }
+    return '';
+  };
+
+  // 🔹 Handle input change with live validation
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+
+    const errorMsg = validateField(name, value);
+    setErrors(prev => ({
+      ...prev,
+      [name]: errorMsg
+    }));
   };
 
+  // 🔹 Validate all fields on submit
   const validateForm = () => {
-    if (!formData.fullName.trim()) {
-      toast.error('Full name is required');
-      return false;
-    }
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      toast.error('Please enter a valid email');
-      return false;
-    }
-    if (formData.password.length < 8) {
-      toast.error('Password must be at least 8 characters');
-      return false;
-    }
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      toast.error('Password must contain uppercase, lowercase, and a number');
-      return false;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return false;
-    }
+    const newErrors = {};
+
+    Object.keys(formData).forEach((field) => {
+      const errorMsg = validateField(field, formData[field]);
+      if (errorMsg) newErrors[field] = errorMsg;
+    });
+
     if (!formData.role) {
-      toast.error('Please select a role (Organizer or Attendee)');
-      return false;
+      newErrors.role = 'Please select a role (Organizer or Attendee)';
     }
     if (!agreeToTerms) {
-      toast.error('You must agree to the Terms & Privacy Policy');
-      return false;
+      newErrors.terms = 'You must agree to the Terms & Privacy Policy';
     }
-    return true;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
@@ -97,28 +121,19 @@ const SignupPage = () => {
       <div className="signup-content">
         {/* Left Panel */}
         <div className="signup-left">
-          <div className="left-content">
-            <div className="logo-section">
-              <div className="main-logo"></div>
-            </div>
-            <div className="hero-text">
-              <h1>Your Gateway to Unforgettable Events</h1>
-              <p>
-                Connect, create, and experience unforgettable moments. <br />
-                EventSphere brings people together.
-              </p>
-            </div>
+          <div className="hero-text">
+            <h1>Your Gateway to Unforgettable Events</h1>
+            <p>Connect, create, and experience unforgettable moments.<br />EventSphere brings people together.</p>
           </div>
         </div>
 
         {/* Right Panel */}
         <div className="signup-right">
           <div className="signup-form-container">
-            <div className="signup-header">
-              <h2>Create Your EventSphere Account</h2>
-            </div>
+            <h2>Create Your EventSphere Account</h2>
 
             <form onSubmit={handleSubmit} className="signup-form">
+
               {/* Full Name */}
               <div className="form-group">
                 <label htmlFor="fullName">Full Name</label>
@@ -131,8 +146,10 @@ const SignupPage = () => {
                     value={formData.fullName}
                     onChange={handleInputChange}
                     placeholder="John Doe"
+                    className={errors.fullName ? 'error' : ''}
                   />
                 </div>
+                {errors.fullName && <p className="error-text">{errors.fullName}</p>}
               </div>
 
               {/* Email */}
@@ -147,8 +164,10 @@ const SignupPage = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="john.doe@example.com"
+                    className={errors.email ? 'error' : ''}
                   />
                 </div>
+                {errors.email && <p className="error-text">{errors.email}</p>}
               </div>
 
               {/* Password */}
@@ -163,6 +182,7 @@ const SignupPage = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="••••••••"
+                    className={errors.password ? 'error' : ''}
                   />
                   <button
                     type="button"
@@ -172,6 +192,7 @@ const SignupPage = () => {
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+                {errors.password && <p className="error-text">{errors.password}</p>}
               </div>
 
               {/* Confirm Password */}
@@ -186,6 +207,7 @@ const SignupPage = () => {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     placeholder="••••••••"
+                    className={errors.confirmPassword ? 'error' : ''}
                   />
                   <button
                     type="button"
@@ -195,6 +217,7 @@ const SignupPage = () => {
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+                {errors.confirmPassword && <p className="error-text">{errors.confirmPassword}</p>}
               </div>
 
               {/* Role Selection */}
@@ -216,6 +239,7 @@ const SignupPage = () => {
                     Attendee
                   </button>
                 </div>
+                {errors.role && <p className="error-text">{errors.role}</p>}
               </div>
 
               {/* Terms */}
@@ -230,6 +254,7 @@ const SignupPage = () => {
                   I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a>
                 </label>
               </div>
+              {errors.terms && <p className="error-text">{errors.terms}</p>}
 
               <button type="submit" className="signup-btn" disabled={!agreeToTerms}>
                 Sign Up

@@ -14,7 +14,9 @@ import SignupPage from "./pages/SignupPage";
 import AttendeeDashboard from "./pages/AttendeeDashboard";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
 import CreateContest from "./pages/CreateContest";
+import CreateEvent from "./pages/CreateEvent";
 import Navbar from "./components/Navbar";
+
 
 /* ───────────────────────── Protected wrapper ───────────────────────── */
 const ProtectedRoute = ({ children }) => {
@@ -45,10 +47,10 @@ const Layout = ({ children }) => {
 
   const additionalLinks =
     role === "organizer"
-      ? [{ to: "/organize-event", text: "Organize Event" }]
+      ? [{ to: "/organize-event", text: "" }]
       : role === "attendee"
-      ? [{ to: "/contests", text: "Contests" }]
-      : [];
+        ? [{ to: "/contests", text: "Contests" }]
+        : [];
 
   return (
     <>
@@ -113,7 +115,7 @@ export default function App() {
 
         {/* ── protected contest builder ─────────────────────────── */}
         <Route
-          path="/organize-event"
+          path="/create-contest"
           element={
             <ProtectedRoute>
               <Layout>
@@ -122,6 +124,17 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/create-event"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <CreateEvent />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
 
         {/* ── role-aware home redirect for logged-in users ───────── */}
         <Route

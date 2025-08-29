@@ -96,6 +96,15 @@
   /* Added padding to the input container to make the icons and input look better */
   /* padding: 8px 12px; */
 }
+.error-text {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+input.error {
+  border: 1px solid red;
+}
 
 .input-container input {
   border: none;
