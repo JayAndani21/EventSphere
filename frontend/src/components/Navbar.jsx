@@ -1,54 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, User } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import '../styles/Navbar.css';
+import React, { useState, useEffect, useRef } from "react";
+import { Menu, X, User } from "lucide-react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import "../styles/Navbar.css";
 
 const Navbar = ({ additionalLinks = [] }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
-  const [userName, setUserName] = useState('');
-  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [userName, setUserName] = useState("");
+  const [role, setRole] = useState("");
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  // ✅ Fetch user info if token exists
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
-    
-    if (token) {
-      fetch('http://localhost:5000/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => res.ok ? res.json() : Promise.reject())
-        .then(data => {
-          setUserName(data.user.fullName);
-        })
-        .catch(() => {
-          setIsLoggedIn(false);
-          setUserName('');
-        });
-    } else {
-      setUserName('');
+
+    if (!token) {
+      setUserName("");
+      setRole("");
+      return;
     }
+
+    fetch("http://localhost:5000/api/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        setUserName(data.user.fullName);
+        setRole(data.user.role);
+      })
+      .catch(() => {
+        setIsLoggedIn(false);
+        setUserName("");
+        setRole("");
+      });
   }, []);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  // ✅ Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target)
+      ) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const handleLoginClick = () => navigate('/login');
-
-  const handleUserIconClick = () => setDropdownOpen(prev => !prev);
+  // ✅ Handlers
+  const toggleMenu = () => setIsMenuOpen((prev) => !prev);
+  const handleLoginClick = () => navigate("/login");
+  const handleUserIconClick = () => setDropdownOpen((prev) => !prev);
 
   const handleLogout = () => {
-    localStorage.clear(); // Clear all items from localStorage
+    localStorage.clear();
     setDropdownOpen(false);
     setIsLoggedIn(false);
-    setUserName('');
-    navigate('/');
+    setUserName("");
+    setRole("");
+    navigate("/");
   };
+
+  // ✅ Check active path
+  const isActive = (path) =>
+    location.pathname === path ? "active" : "";
 
   return (
     <nav className="navbar">
-      <div className={`navbar-container ${isLoggedIn ? 'logged-in' : ''}`}>
+      <div className={`navbar-container ${isLoggedIn ? "logged-in" : ""}`}>
+        {/* Brand / Logo */}
         <div className="navbar-brand">
           <div className="logo">
             <div className="logo-circle"></div>
@@ -56,89 +86,94 @@ const Navbar = ({ additionalLinks = [] }) => {
           </div>
         </div>
 
-        <div className={`navbar-menu ${isMenuOpen ? 'active' : ''}`}>
-          <Link to={isLoggedIn ? "/home" : "/"} className="navbar-item active">Home</Link>
-          <a href="#features" className="navbar-item">Features</a>
-          <a href="#events" className="navbar-item">Events</a>
-          <a href="#contact" className="navbar-item">Contact</a>
+        {/* Links */}
+        <div className={`navbar-menu ${isMenuOpen ? "active" : ""}`}>
+          <Link
+            to={isLoggedIn ? "/home" : "/"}
+            className={`navbar-item ${isActive("/home") || isActive("/")}`}
+          >
+            Home
+          </Link>
+
+          {role === "organizer" && (
+            <Link
+              to="/organizer-dashboard"
+              className={`navbar-item ${isActive("/organizer-dashboard")}`}
+            >
+              Dashboard
+            </Link>
+          )}
+
+          <a href="#events" className="navbar-item">
+            Events
+          </a>
+
+          {role === "organizer" && (
+            <Link to="/" className={`navbar-item ${isActive("/")}`}>
+              My Events
+            </Link>
+          )}
+
+          <a href="#contact" className="navbar-item">
+            Contact
+          </a>
+
+          {role === "attendee" && (
+            <Link
+              to="/attendee-dashboard"
+              className={`navbar-item ${isActive("/attendee-dashboard")}`}
+            >
+              Dashboard
+            </Link>
+          )}
+
+          {role === "attendee" && (
+            <Link
+              to="/ticketpage"
+              className={`navbar-item ${isActive("/ticketpage")}`}
+            >
+              My Bookings
+            </Link>
+          )}
+
           {additionalLinks.map((link, index) => (
-            <Link key={index} to={link.to} className="navbar-item">{link.text}</Link>
+            <Link
+              key={index}
+              to={link.to}
+              className={`navbar-item ${isActive(link.to)}`}
+            >
+              {link.text}
+            </Link>
           ))}
         </div>
 
-        <div className="navbar-auth" style={{ position: 'relative' }}>
+        {/* Auth / User */}
+        <div className="navbar-auth">
           {!isLoggedIn ? (
-            <button className="signup-btn" onClick={handleLoginClick}>Login</button>
+            <button className="signup-btn" onClick={handleLoginClick}>
+              Login
+            </button>
           ) : (
             <>
               <button
+                ref={buttonRef}
                 className="user-icon-btn"
                 onClick={handleUserIconClick}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: '40px', // Match login button height
-                  width: '100%',  // Match login button width if needed
-                  outline: 'none', // Remove the focus outline
-                }}
                 aria-label="User menu"
               >
-                <div
-                  style={{
-                    background: '#FFF',
-                    borderRadius: '0.5rem',
-                    width: '100px',
-                    height: '40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <User size={24} color='#8B5CF6' />
+                <div className="user-icon-box">
+                  <User size={24} color="#8B5CF6" />
                 </div>
               </button>
+
               {dropdownOpen && (
-                <div className="user-dropdown" style={{
-                  position: 'absolute',
-                  top: '110%',
-                  right: 0,
-                  background: '#fff',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-                  borderRadius: '0.5rem',
-                  minWidth: '180px',
-                  zIndex: 2000,
-                  padding: '1rem 0.5rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  gap: '0.5rem',
-                }}>
-                  <div style={{
-                    fontWeight: 600,
-                    color: '#4a5568',
-                    marginBottom: '0.5rem',
-                    fontSize: '1rem',
-                    paddingLeft: '0.5rem'
-                  }}>{userName}</div>
-                  <button
-                    onClick={handleLogout}
-                    style={{
-                      background: '#F3F4F6',
-                      color: '#8B5CF6',
-                      border: 'none',
-                      borderRadius: '0.375rem',
-                      padding: '0.5rem 1rem',
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                      cursor: 'pointer',
-                      width: '100%',
-                      textAlign: 'left',
-                    }}
-                  >
+                <div ref={dropdownRef} className="user-dropdown">
+                  <div className="user-info">
+                    {userName}
+                    <br />
+                    <span className="role-badge">{role}</span>
+                  </div>
+                  <button onClick={handleLogout} className="logout-btn">
                     Logout
                   </button>
                 </div>
@@ -147,6 +182,7 @@ const Navbar = ({ additionalLinks = [] }) => {
           )}
         </div>
 
+        {/* Mobile Toggle */}
         <div className="mobile-menu-toggle" onClick={toggleMenu}>
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </div>

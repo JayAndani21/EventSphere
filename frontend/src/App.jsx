@@ -1,11 +1,11 @@
 // src/App.jsx
-import React, { useEffect } from "react";
+import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
-  useNavigate,
   Navigate,
+  Outlet,
 } from "react-router-dom";
 
 import HomePage from "./pages/HomePage";
@@ -16,135 +16,48 @@ import OrganizerDashboard from "./pages/OrganizerDashboard";
 import CreateContest from "./pages/CreateContest";
 import CreateEvent from "./pages/CreateEvent";
 import Navbar from "./components/Navbar";
-
+import TicketPage from "./pages/TicketPage";  
 
 /* ───────────────────────── Protected wrapper ───────────────────────── */
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = () => {
   const token = localStorage.getItem("token");
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!token) navigate("/login");
-  }, [token, navigate]);
-
-  return token ? children : null;
-};
-
-/* ──────────────────────── role-based home redirect ─────────────────── */
-const HomeRedirect = () => {
-  const role = localStorage.getItem("userRole");
-  return (
-    <Navigate
-      to={role === "organizer" ? "/organizer-dashboard" : "/attendee-dashboard"}
-      replace
-    />
-  );
+  return token ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 /* ───────────────────────── Navbar + outlet layout ──────────────────── */
-const Layout = ({ children }) => {
-  const role = localStorage.getItem("userRole");
-
-  const additionalLinks =
-    role === "organizer"
-      ? [{ to: "/organize-event", text: "" }]
-      : role === "attendee"
-        ? [{ to: "/contests", text: "Contests" }]
-        : [];
-
-  return (
-    <>
-      <Navbar additionalLinks={additionalLinks} />
-      {children}
-    </>
-  );
-};
+const Layout = () => (
+  <>
+    <Navbar />
+    <Outlet />
+  </>
+);
 
 /* ────────────────────────────── App root ───────────────────────────── */
 export default function App() {
   return (
     <Router>
       <Routes>
-        {/* ── public ────────────────────────────────────────────── */}
-        <Route
-          path="/"
-          element={
-            <Layout>
-              <HomePage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <Layout>
-              <LoginPage />
-            </Layout>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <Layout>
-              <SignupPage />
-            </Layout>
-          }
-        />
+        {/* Public routes */}
+        <Route element={<Layout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+        </Route>
 
-        {/* ── protected dashboards ─────────────────────────────── */}
-        <Route
-          path="/attendee-dashboard"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <AttendeeDashboard />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/organizer-dashboard"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <OrganizerDashboard />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/attendee-dashboard" element={<AttendeeDashboard />} />
+            <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
+            <Route path="/create-contest" element={<CreateContest />} />
+            <Route path="/create-event" element={<CreateEvent />} />
+            <Route path="/ticketpage" element={<TicketPage />} />
+            <Route path="/home" element={<HomePage />} />
+          </Route>
+        </Route>
 
-        {/* ── protected contest builder ─────────────────────────── */}
-        <Route
-          path="/create-contest"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <CreateContest />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/create-event"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <CreateEvent />
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
-
-
-        {/* ── role-aware home redirect for logged-in users ───────── */}
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <HomeRedirect />
-            </ProtectedRoute>
-          }
-        />
+        {/* Fallback for unknown routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
