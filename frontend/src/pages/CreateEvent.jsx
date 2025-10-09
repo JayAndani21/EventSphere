@@ -19,15 +19,18 @@ export default function EventForm() {
     organizerName: "",
     organizerEmail: "",
     organizerPhone: "",
-    coverImage: null,
+    coverImageUrl: "", // Cloudinary URL from backend
   });
+
+  const [uploading, setUploading] = useState(false);
 
   const mealChoices = ["Breakfast", "Lunch", "Dinner", "Snacks", "Beverages"];
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
-    if (type === "file") {
-      setFormData({ ...formData, [name]: files[0] });
+
+    if (type === "file" && files[0]) {
+      uploadImageToBackend(files[0]);
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -40,21 +43,94 @@ export default function EventForm() {
     setFormData({ ...formData, mealOptions: updated });
   };
 
-  const handleSubmit = (e) => {
+  // Upload file to backend which handles Cloudinary signed upload
+  const uploadImageToBackend = async (file) => {
+  setUploading(true);
+  const data = new FormData();
+  data.append("image", file);
+
+  try {
+    const res = await fetch("http://localhost:5000/api/upload", {
+      method: "POST",
+      body: data,
+    });
+
+    if (!res.ok) {
+      const text = await res.text(); // fallback if not JSON
+      throw new Error(text || "Upload failed");
+    }
+
+    const result = await res.json();
+    if (result.imageUrl) {
+      setFormData({ ...formData, coverImageUrl: result.imageUrl });
+    } else {
+      alert("Image upload failed: No URL returned");
+    }
+  } catch (err) {
+    console.error("Upload error:", err);
+    alert("Error uploading image: " + err.message);
+  } finally {
+    setUploading(false);
+  }
+};
+
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form Data:", formData);
-    alert("Event form submitted successfully!");
+    if (!formData.coverImageUrl) {
+      alert("Please upload a cover image.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token"); // or wherever you store it
+
+      const res = await fetch("http://localhost:5000/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+
+      if (res.ok) {
+        alert("Event created successfully!");
+        setFormData({
+          eventName: "",
+          eventType: "",
+          category: "",
+          date: "",
+          time: "",
+          venueName: "",
+          address: "",
+          city: "",
+          state: "",
+          capacity: "",
+          ticketType: "",
+          ticketPrice: "",
+          mealOptions: [],
+          organizerName: "",
+          organizerEmail: "",
+          organizerPhone: "",
+          coverImageUrl: "",
+        });
+      } else {
+        alert("Failed to create event.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error submitting form.");
+    }
   };
 
   const isOffline = formData.eventType === "Offline";
-  const isOnline = formData.eventType === "Online";
   const isPaid = formData.ticketType === "Paid";
 
   return (
     <div className="form-container">
-      <h2>
-        Event Creation Form
-      </h2>
+      <h2>Event Creation Form</h2>
 
       <form onSubmit={handleSubmit}>
         {/* Event Details */}
@@ -229,6 +305,14 @@ export default function EventForm() {
             <section>
               <h3>Event Cover Image</h3>
               <input type="file" name="coverImage" onChange={handleChange} />
+              {uploading && <p>Uploading image...</p>}
+              {formData.coverImageUrl && (
+                <img
+                  src={formData.coverImageUrl}
+                  alt="Cover Preview"
+                  style={{ width: "200px", marginTop: "10px" }}
+                />
+              )}
             </section>
           </>
         )}
@@ -268,8 +352,8 @@ export default function EventForm() {
           </label>
         </section>
 
-        <button type="submit" className="submit-btn">
-          Create Event
+        <button type="submit" className="submit-btn" disabled={uploading}>
+          {uploading ? "Uploading..." : "Create Event"}
         </button>
       </form>
     </div>
