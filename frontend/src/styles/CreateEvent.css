@@ -1,99 +1,200 @@
-/* Page background */
-.create-event-page {
+/* 🌟 Page background */
+/* 🌟 Page background */
+.form-container {
   min-height: 100vh;
-  background: #f9f9fb;
+  background: linear-gradient(135deg, #f0f3ff, #fafaff);
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  justify-content: flex-start;   /* keeps form at top, not centered */
+  align-items: center;           /* centers horizontally only */
   padding: 40px 20px;
+  font-family: "Inter", system-ui, sans-serif;
 }
 
-/* Form container */
-.create-event-container {
+/* 📦 Title styling */
+.form-container h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e1b4b;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+
+/* 🧩 Form styling */
+form {
   width: 100%;
   max-width: 900px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 8px 25px rgba(106, 17, 203, 0.3);
-}
-.error-message {
-  color: red;
-  font-size: 14px;
-  margin-top: -10px;
-  margin-bottom: 10px;
-}
-
-
-/* Title */
-.form-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
-/* Form layout */
-.event-form {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px 35px;
+  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
+  transition: all 0.3s ease;
 }
 
-/* Group */
-.form-group {
+form:hover {
+  box-shadow: 0 12px 35px rgba(79, 70, 229, 0.25);
+}
+
+/* 🔹 Section titles */
+form section h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #312e81;
+  margin-bottom: 15px;
+  border-left: 4px solid #4f46e5;
+  padding-left: 10px;
+  text-align: left; /* keeps section titles aligned left inside form */
+}
+
+/* 🔹 Labels */
+label {
   display: flex;
   flex-direction: column;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 15px;
+  font-size: 15px;
 }
 
-.form-group label {
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.form-group input,
-.form-group textarea {
-  padding: 10px;
-  border: 1px solid #d1d5db;
+/* 🧠 Inputs, textarea, select */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+textarea,
+select,
+input[type="file"] {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 14px;
+  color: #111827;
+  background-color: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
 
-.form-group textarea {
-  min-height: 80px;
+input:focus,
+textarea:focus,
+select:focus,
+input[type="file"]:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+/* 📄 Textarea adjustments */
+textarea {
+  min-height: 90px;
   resize: vertical;
 }
 
-/* Row layout */
-.form-row {
+/* 🔽 Select dropdown styling */
+select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #4f46e5 50%),
+                    linear-gradient(135deg, #4f46e5 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(1em + 2px),
+                       calc(100% - 13px) calc(1em + 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+select option {
+  background-color: #fff;
+  color: #111827;
+  font-weight: 500;
+}
+
+select option:hover {
+  background-color: #e0e7ff;
+}
+
+/* 🔸 Inline group (date/time, city/state, capacity/price) */
+.inline-group {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
 }
 
-/* Ticket Title */
-.ticket-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-top: 10px;
-}
-
-/* Save button */
-.form-actions {
+/* 🍽️ Checkbox group */
+.checkbox-group {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
-.save-btn {
-  background: #4f46e5;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  font-size: 14px;
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
   cursor: pointer;
-  transition: 0.3s;
 }
 
-.save-btn:hover {
-  background: #4338ca;
+.checkbox-group input {
+  margin-right: 8px;
+}
+
+/* 💾 Submit button */
+.submit-btn {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #fff;
+  padding: 12px 26px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+  align-self: flex-end;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3);
+  background: linear-gradient(135deg, #4338ca, #4f46e5);
+}
+
+.submit-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ⚠️ Error message */
+.error-message {
+  color: #dc2626;
+  font-size: 14px;
+  margin-top: -8px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  background: #fee2e2;
+  border-left: 4px solid #dc2626;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+/* 📱 Responsive adjustments */
+@media (max-width: 600px) {
+  form {
+    padding: 25px 20px;
+  }
+
+  .form-container h2 {
+    font-size: 22px;
+  }
+
+  .submit-btn {
+    width: 100%;
+  }
+
+  form section h3 {
+    font-size: 16px;
+  }
 }
