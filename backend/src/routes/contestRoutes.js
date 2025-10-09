@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../middleware/authMiddleware');
 const {
   createContest,
   getAllContests,
@@ -9,77 +10,22 @@ const {
   deleteContest,
   joinContest,
   leaveContest,
-  getContestParticipants
+  getContestParticipants,
 } = require('../controllers/contestController');
 
-const auth = require('../middleware/authMiddleware');
-const {
-  requireOrganizer,
-  requireContestOwnership,
-  requireModifiable,
-  validateContestData,
-  checkContestAccess,
-  rateLimitContestCreation,
-  logContestActivity
-} = require('../middleware/contestMiddleware');
+// Public routes
+router.get('/', getAllContests);
+router.get('/:id', auth, getContest);
 
-// Public routes (no authentication required)
-router.get('/public', getAllContests); // Get all public contests
+// Organizer routes
+router.post('/', auth, createContest);
+router.get('/me/my-contests', auth, getMyContests);
+router.put('/:id', auth, updateContest);
+router.delete('/:id', auth, deleteContest);
 
-// Protected routes (authentication required)
-router.use(auth); // Apply authentication to all routes below
-
-// Contest CRUD operations for organizers
-router.post('/', 
-  requireOrganizer,
-  validateContestData,
-  rateLimitContestCreation,
-  logContestActivity('create'),
-  createContest
-);
-
-router.get('/my-contests', 
-  requireOrganizer,
-  logContestActivity('view_my_contests'),
-  getMyContests
-);
-
-router.get('/:id', 
-  logContestActivity('view'),
-  getContest
-);
-
-router.put('/:id',
-  requireContestOwnership,
-  requireModifiable,
-  validateContestData,
-  logContestActivity('update'),
-  updateContest
-);
-
-router.delete('/:id',
-  requireContestOwnership,
-  logContestActivity('delete'),
-  deleteContest
-);
-
-// Participant management
-router.post('/:id/join',
-  checkContestAccess,
-  logContestActivity('join'),
-  joinContest
-);
-
-router.post('/:id/leave',
-  logContestActivity('leave'),
-  leaveContest
-);
-
-// Organizer-only participant management
-router.get('/:id/participants',
-  requireContestOwnership,
-  logContestActivity('view_participants'),
-  getContestParticipants
-);
+// Participant routes
+router.post('/:id/join', auth, joinContest);
+router.post('/:id/leave', auth, leaveContest);
+router.get('/:id/participants', auth, getContestParticipants);
 
 module.exports = router;

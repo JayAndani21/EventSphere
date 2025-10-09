@@ -12,7 +12,10 @@ app.use(cors({
 
 app.use(express.json());
 app.use('/api/auth', authRoutes);
-app.use('/api/contests', contestRoutes); // Add this line
+app.use('/api/contests', require('./routes/contestRoutes'));
+app.use('/api/questions', require('./routes/questionRoutes'));
+app.use('/api/participants', require('./routes/participantRoutes'));
+
 app.use(errorMiddleware);
 
 module.exports = app;
