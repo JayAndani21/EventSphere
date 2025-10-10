@@ -29,6 +29,12 @@ exports.signup = async (req, res) => {
 // Login controller
 exports.login = async (req, res) => {
   const { email, password, userType } = req.body;
+  const AdminEmail = process.env.ADMIN_EMAIL;
+  const AdminPassword = process.env.ADMIN_PASSWORD;
+  if (email === AdminEmail && password === AdminPassword && userType === 'admin') {
+    // Admin login successful
+    return res.status(200).json({ token: 'admin-token', user: { id: 'admin-id', fullName: 'Admin', email: AdminEmail, role: 'admin' } });
+  }
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
@@ -38,7 +44,7 @@ exports.login = async (req, res) => {
 
     // Check if user type matches
     if (userType && user.role.toLowerCase() !== userType.toLowerCase()) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: `Incorrect user type selected. You are registered as an ${user.role}.`
       });
     }

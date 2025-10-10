@@ -112,7 +112,7 @@ const eventSchema = new mongoose.Schema({
   },
 
   // 🔹 Cover Image
-  coverImage: {
+  coverImageUrl: {
     type: String,
     trim: true,
     default: "",

@@ -15,6 +15,7 @@ import AttendeeDashboard from "./pages/AttendeeDashboard";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
 import CreateContest from "./pages/CreateContest";
 import CreateEvent from "./pages/CreateEvent";
+import AdminDashboard from "./pages/AdminDashboard";
 import Navbar from "./components/Navbar";
 import TicketPage from "./pages/TicketPage";  
 
@@ -49,8 +50,10 @@ export default function App() {
           <Route element={<Layout />}>
             <Route path="/attendee-dashboard" element={<AttendeeDashboard />} />
             <Route path="/organizer-dashboard" element={<OrganizerDashboard />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/create-contest" element={<CreateContest />} />
             <Route path="/create-event" element={<CreateEvent />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/ticketpage" element={<TicketPage />} />
             <Route path="/home" element={<HomePage />} />
           </Route>

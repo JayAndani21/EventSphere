@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, User, Building } from 'lucide-react';
+import { Eye, EyeOff, User, Building, ShieldUser } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import ParticlesBackground from '../components/ParticlesBackground';
 import '../styles/LoginPage.css';
@@ -80,15 +80,25 @@ const LoginPage = () => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userRole', data.user.role);
         localStorage.setItem('userEmail', data.user.email);
-
         setTimeout(() => {
           const userRole = data.user.role;
-          const dashboardPath = userRole === 'organizer' ? '/organizer-dashboard' : '/attendee-dashboard';
+          let dashboardPath;
+
+          if (userRole === 'admin') {
+            dashboardPath = '/admin-dashboard';
+          } else if (userRole === 'organizer') {
+            dashboardPath = '/organizer-dashboard';
+          } else {
+            dashboardPath = '/attendee-dashboard';
+          }
+
           navigate(dashboardPath);
           window.location.reload();
         }, 1000);
       } else {
-        toast.error(data.message || 'Login failed');
+        // Handle invalid credentials or other backend errors
+        toast.error(data.message || 'Invalid email or password');
+        return;
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -133,6 +143,14 @@ const LoginPage = () => {
             >
               <Building size={16} /> Organizer
             </button>
+            <button
+              type="button"
+              className={`toggle-btn ${userType === 'admin' ? 'active' : ''}`}
+              onClick={() => setUserType('admin')}
+            >
+              <ShieldUser size={16} /> Admin
+            </button>
+
           </div>
 
           <form onSubmit={handleSubmit} className="login-form">
@@ -193,9 +211,11 @@ const LoginPage = () => {
               Login
             </button>
 
-            <div className="signup-link">
-              Don't have an account? <Link to="/signup" className="navbar-item">Sign up</Link>
-            </div>
+            {userType !== 'admin' && (
+              <div className="signup-link">
+                Don't have an account? <Link to="/signup" className="navbar-item">Sign up</Link>
+              </div>
+            )}
           </form>
         </div>
       </div>

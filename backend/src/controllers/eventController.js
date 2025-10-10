@@ -26,9 +26,9 @@ exports.createEvent = async (req, res) => {
 // ✅ Get all public (published) events
 exports.getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find({ isActive: true, status: 'published' })
-      .populate('organizer', 'fullName email')
-      .sort({ createdAt: -1 });
+    const events = await Event.find({ isActive: true })
+    .populate('organizer', 'fullName email')
+    .sort({ createdAt: -1 });
 
     res.json(events);
   } catch (error) {
