@@ -7,7 +7,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 
-const Dashboard = () => {
+const OrganizerDashboard = () => {
   const events = [
     {
       title: "Corporate Gala",
@@ -36,12 +36,11 @@ const Dashboard = () => {
     }
   };
 
-
   return (
-    <div className="dashboard">
+    <div className="organizer-dashboard">
       {/* Sidebar */}
-      <aside className="sidebar">
-        <h2 className="logo">EventSphere</h2>
+      <aside className="organizer-sidebar">
+        <h2 className="organizer-logo">EventSphere</h2>
         <nav>
           <ul>
             <li><Calendar size={18} /> Dashboard</li>
@@ -53,33 +52,33 @@ const Dashboard = () => {
       </aside>
 
       {/* Main */}
-      <main className="main">
+      <main className="organizer-main">
         {/* Header */}
-        <header className="header">
+        <header className="organizer-header">
           <h1>Organizer Dashboard</h1>
-          <div className="actions">
+          <div className="organizer-actions">
             <Link to="/create-event">
-              <button className="btn">
+              <button className="organizer-btn">
                 <Plus size={16} /> Create Event
               </button>
             </Link>
             <Link to="/create-contest">
-              <button className="btn">
+              <button className="organizer-btn">
                 <Plus size={16} /> Create Contest
               </button>
             </Link>
-            <button className="btn"><Users size={16} /> Upload Guests</button>
-            <button className="btn"><Ticket size={16} /> Generate Tickets</button>
+            <button className="organizer-btn"><Users size={16} /> Upload Guests</button>
+            <button className="organizer-btn"><Ticket size={16} /> Generate Tickets</button>
           </div>
         </header>
 
         {/* Upcoming Events */}
-        <section className="event-section">
-          <div className="event-cards">
+        <section className="organizer-event-section">
+          <div className="organizer-event-cards">
             {events.map((event, i) => (
-              <div key={i} className="event-card">
-                <img src={event.image} alt={event.title} className="event-image" />
-                <div className="event-info">
+              <div key={i} className="organizer-event-card">
+                <img src={event.image} alt={event.title} className="organizer-event-image" />
+                <div className="organizer-event-info">
                   <h3>{event.title}</h3>
                   <p>{event.date}</p>
                   <p>{event.location}</p>
@@ -90,18 +89,18 @@ const Dashboard = () => {
         </section>
 
         {/* Calendar */}
-        <section className="calendar">
-          <div className="calendar-box">(Drag-and-Drop Calendar View)</div>
+        <section className="organizer-calendar">
+          <div className="organizer-calendar-box">(Drag-and-Drop Calendar View)</div>
         </section>
 
         {/* Analytics */}
-        <section className="analytics">
-          <div className="chart">📊 Ticket Sales (Chart)</div>
-          <div className="chart">📈 Monthly Revenue (Chart)</div>
+        <section className="organizer-analytics">
+          <div className="organizer-chart">📊 Ticket Sales (Chart)</div>
+          <div className="organizer-chart">📈 Monthly Revenue (Chart)</div>
         </section>
       </main>
     </div>
   );
 };
 
-export default Dashboard;
+export default OrganizerDashboard;

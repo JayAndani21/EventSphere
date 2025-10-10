@@ -16,16 +16,23 @@ const Navbar = ({ additionalLinks = [] }) => {
   const buttonRef = useRef(null);
 
   // ✅ Fetch user info if token exists
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  const storedRole = localStorage.getItem("userRole");
+  const storedName = localStorage.getItem("userName");
+  const storedEmail = localStorage.getItem("userEmail");
 
-    if (!token) {
-      setUserName("");
-      setRole("");
-      return;
-    }
+  setIsLoggedIn(!!token);
 
+  // ✅ Handle Admin separately (no JWT fetch)
+  if (storedRole === "admin") {
+    setUserName(storedName || "Admin");
+    setRole("admin");
+    return;
+  }
+
+  // ✅ For other users — fetch their info using JWT
+  if (token) {
     fetch("http://localhost:5000/api/auth/me", {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -39,7 +46,12 @@ const Navbar = ({ additionalLinks = [] }) => {
         setUserName("");
         setRole("");
       });
-  }, []);
+  } else {
+    setUserName("");
+    setRole("");
+  }
+}, []);
+
 
   // ✅ Close dropdown on outside click
   useEffect(() => {

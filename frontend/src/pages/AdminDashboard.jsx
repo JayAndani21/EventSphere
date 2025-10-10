@@ -108,7 +108,7 @@ const AdminDashboard = () => {
       </aside>
 
       <main className="main-content">
-        <header className="header">
+        {/* <header className="header">
           <h1 className="header-title">Event Management System</h1>
           <div className="header-actions">
             <div className="notification-icon" onClick={() => handleSectionChange('pending-events')}>
@@ -126,7 +126,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
-        </header>
+        </header> */}
 
         <div className="content-area">{renderContent()}</div>
       </main>
@@ -179,8 +179,8 @@ const DashboardOverview = () => {
 
       <div className="section">
         <h3 className="section-title">Quick Actions</h3>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px' }}>
-          <button className="btn btn-primary">
+        <div className="quick-actions">
+          <button className="a-btn btn-primary">
             <Users size={16} />
             View All Users
           </button>

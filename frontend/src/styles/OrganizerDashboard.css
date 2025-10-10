@@ -1,5 +1,5 @@
 /* Layout */
-.dashboard {
+.organizer-dashboard {
   display: flex;
   min-height: 100vh;
   background: #f9f9fb;
@@ -7,7 +7,7 @@
 }
 
 /* Sidebar */
-.sidebar {
+.organizer-sidebar {
   width: 240px;
   background: linear-gradient(180deg, #7b5cff, #9d7dff);
   color: white;
@@ -16,18 +16,18 @@
   flex-direction: column;
 }
 
-.logo {
+.organizer-logo {
   font-size: 1.4rem;
   font-weight: 700;
   margin-bottom: 2rem;
 }
 
-.sidebar nav ul {
+.organizer-sidebar nav ul {
   list-style: none;
   padding: 0;
 }
 
-.sidebar nav ul li {
+.organizer-sidebar nav ul li {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -37,36 +37,36 @@
   transition: 0.2s;
 }
 
-.sidebar nav ul li:hover {
+.organizer-sidebar nav ul li:hover {
   opacity: 0.85;
 }
 
 /* Main */
-.main {
+.organizer-main {
   flex: 1;
   padding: 30px;
 }
 
 /* Header */
-.header {
+.organizer-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
 }
 
-.header h1 {
+.organizer-header h1 {
   font-size: 1.6rem;
   font-weight: 600;
   color: #222;
 }
 
-.actions {
+.organizer-actions {
   display: flex;
   gap: 12px;
 }
 
-.btn {
+.organizer-btn {
   background: white;
   border: none;
   color: #444;
@@ -82,24 +82,24 @@
   transition: 0.3s;
 }
 
-.btn:hover {
+.organizer-btn:hover {
   background: linear-gradient(90deg, #7b5cff, #9d7dff);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(123, 92, 255, 0.5);
 }
 
 /* Events */
-.event-section {
+.organizer-event-section {
   margin-bottom: 30px;
 }
 
-.event-cards {
+.organizer-event-cards {
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
 }
 
-.event-card {
+.organizer-event-card {
   flex: 1;
   min-width: 240px;
   max-width: 280px; 
@@ -111,36 +111,36 @@
   cursor: pointer;
 }
 
-.event-card:hover {
+.organizer-event-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.15);
 }
 
-.event-image {
+.organizer-event-image {
   width: 100%;
   height: 140px;
   object-fit: cover;
 }
 
-.event-info {
+.organizer-event-info {
   padding: 14px;
 }
 
-.event-info h3 {
+.organizer-event-info h3 {
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 6px;
   color: #222;
 }
 
-.event-info p {
+.organizer-event-info p {
   font-size: 0.85rem;
   color: #555;
   margin: 2px 0;
 }
 
 /* Calendar */
-.calendar-box {
+.organizer-calendar-box {
   background: #fff;
   border-radius: 14px;
   padding: 20px;
@@ -213,12 +213,12 @@
 }
 
 /* Analytics */
-.analytics {
+.organizer-analytics {
   display: flex;
   gap: 20px;
 }
 
-.chart {
+.organizer-chart {
   flex: 1;
   background: #fff;
   border-radius: 14px;

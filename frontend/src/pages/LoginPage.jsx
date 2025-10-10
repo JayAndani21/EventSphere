@@ -54,23 +54,38 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, userType })
+        body: JSON.stringify({ email, password, userType }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Check if the selected user type matches the user's role from database
+        // ✅ Handle Admin login (special case)
+        if (data.user.role.toLowerCase() === 'admin') {
+          localStorage.setItem('token', data.token); // admin-token
+          localStorage.setItem('userRole', data.user.role);
+          localStorage.setItem('userEmail', data.user.email);
+          localStorage.setItem('userName', data.user.fullName);
+
+          toast.success('Admin login successful!');
+          setTimeout(() => {
+            navigate('/admin-dashboard');
+            window.location.reload();
+          }, 1000);
+          return;
+        }
+
+        // ✅ For Attendee/Organizer
         if (data.user.role.toLowerCase() !== userType.toLowerCase()) {
-          toast.error(`Please select the correct user type. You are registered as an ${data.user.role}.`);
+          toast.error(
+            `Please select the correct user type. You are registered as an ${data.user.role}.`
+          );
           return;
         }
 
@@ -80,31 +95,32 @@ const LoginPage = () => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userRole', data.user.role);
         localStorage.setItem('userEmail', data.user.email);
+        localStorage.setItem('userName', data.user.fullName);
+
         setTimeout(() => {
           const userRole = data.user.role;
           let dashboardPath;
 
-          if (userRole === 'admin') {
-            dashboardPath = '/admin-dashboard';
-          } else if (userRole === 'organizer') {
+          if (userRole === 'organizer') {
             dashboardPath = '/organizer-dashboard';
-          } else {
+          } else if (userRole === 'attendee') {
             dashboardPath = '/attendee-dashboard';
+          } else {
+            dashboardPath = '/';
           }
 
           navigate(dashboardPath);
           window.location.reload();
         }, 1000);
       } else {
-        // Handle invalid credentials or other backend errors
         toast.error(data.message || 'Invalid email or password');
-        return;
       }
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Something went wrong. Please try again.');
     }
   };
+
 
   return (
     <div className="login-container">
