@@ -10,5 +10,10 @@ router.get('/:id', eventController.getEventById);
 router.put('/:id', auth, eventController.updateEvent);
 router.delete('/:id', auth, eventController.deleteEvent);
 
+// Admin functionalities
+router.put('/:id/approve', auth, eventController.approveEvent);
+router.put('/:id/reject', auth, eventController.rejectEvent);
+
+
 module.exports = router;
     

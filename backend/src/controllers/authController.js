@@ -73,3 +73,45 @@ exports.getMe = async (req, res) => {
     res.status(401).json({ message: 'Invalid token' });
   }
 };
+
+// Get total counts of users, attendees, and organizers
+exports.getUserStats = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalAttendees = await User.countDocuments({ role: 'attendee' });
+    const totalOrganizers = await User.countDocuments({ role: 'organizer' });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalUsers,
+        totalAttendees,
+        totalOrganizers
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching user statistics'
+    });
+  }
+};
+
+// Get all users
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select('-password'); // exclude password field
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      data: users
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error: Unable to fetch users'
+    });
+  }
+};

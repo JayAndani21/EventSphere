@@ -9,6 +9,7 @@ exports.createEvent = async (req, res) => {
 
     const event = new Event({
       ...req.body,
+      status: "draft",
       organizer: organizer._id
     });
 
@@ -26,15 +27,29 @@ exports.createEvent = async (req, res) => {
 // ✅ Get all public (published) events
 exports.getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find({ isActive: true })
-    .populate('organizer', 'fullName email')
-    .sort({ createdAt: -1 });
+    const filter = {};
 
-    res.json(events);
+    // Optional query filter — e.g. ?status=draft
+    if (req.query.status) filter.status = req.query.status;
+
+    const events = await Event.find(filter)
+      .populate("organizer", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: events.length,
+      data: events,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch events", error: error.message });
+    console.error("Error fetching events:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch events",
+    });
   }
 };
+
 
 // ✅ Get single event
 exports.getEventById = async (req, res) => {
@@ -51,9 +66,14 @@ exports.getEventById = async (req, res) => {
   }
 };
 
-// ✅ Update event (Organizer only)
+// ✅ Update event — Organizer only
 exports.updateEvent = async (req, res) => {
   try {
+    // ✅ Only organizer can update events
+    if (req.user.role !== 'organizer') {
+      return res.status(403).json({ message: "Access denied. Only organizers can update events." });
+    }
+
     const event = await Event.findOne({
       _id: req.params.id,
       organizer: req.user.id
@@ -71,9 +91,14 @@ exports.updateEvent = async (req, res) => {
   }
 };
 
-// ✅ Delete (soft delete)
+// ✅ Soft Delete — Organizer only
 exports.deleteEvent = async (req, res) => {
   try {
+    // ✅ Only organizer can delete events
+    if (req.user.role !== 'organizer') {
+      return res.status(403).json({ message: "Access denied. Only organizers can delete events." });
+    }
+
     const event = await Event.findOne({
       _id: req.params.id,
       organizer: req.user.id
@@ -90,3 +115,48 @@ exports.deleteEvent = async (req, res) => {
     res.status(500).json({ message: "Failed to delete event", error: error.message });
   }
 };
+
+
+
+// ✅ Admin: Approve event
+exports.approveEvent = async (req, res) => {
+  try {
+    // only admin can approve
+    if (req.user.role !== "admin")
+      return res.status(403).json({ message: "Access denied. Admins only." });
+
+    const event = await Event.findById(req.params.id);
+    if (!event)
+      return res.status(404).json({ message: "Event not found" });
+
+    if (event.status === "cancelled")
+      return res.status(400).json({ message: "Cancelled events cannot be approved" });
+
+    event.status = "published";
+    await event.save();
+
+    res.json({ message: "Event approved successfully", event });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to approve event", error: error.message });
+  }
+};
+
+// ✅ Admin: Reject event
+exports.rejectEvent = async (req, res) => {
+  try {
+    if (req.user.role !== "admin")
+      return res.status(403).json({ message: "Access denied. Admins only." });
+
+    const event = await Event.findById(req.params.id);
+    if (!event)
+      return res.status(404).json({ message: "Event not found" });
+
+    event.status = "cancelled";
+    await event.save();
+
+    res.json({ message: "Event rejected successfully", event });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to reject event", error: error.message });
+  }
+};
+
