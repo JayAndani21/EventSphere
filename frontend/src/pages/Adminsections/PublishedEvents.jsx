@@ -1,54 +1,51 @@
 import { useState, useEffect } from 'react';
 import { Search, Calendar, CheckCircle, Clock, Eye } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 
 const PublishedEvents = () => {
-  const demoEvents = [
-    {
-      id: 1,
-      name: 'Tech Conference 2025',
-      description: 'A conference about emerging tech trends.',
-      type: 'conference',
-      organizers: { organization_name: 'Tech Corp' },
-      event_date: '2025-11-15T10:00:00Z',
-      location: 'Mumbai Convention Center',
-      capacity: 200,
-      tickets_issued: 150,
-      approval_comment: 'Approved by Admin',
-      status: 'published'
-    },
-    {
-      id: 2,
-      name: 'Startup Workshop',
-      description: 'Hands-on workshop for startup enthusiasts.',
-      type: 'workshop',
-      organizers: { organization_name: 'InnovateX' },
-      event_date: '2025-12-05T14:00:00Z',
-      location: 'Ahmedabad Hall',
-      capacity: 50,
-      tickets_issued: 30,
-      status: 'published'
-    },
-    {
-      id: 3,
-      name: 'Coding Contest 2025',
-      description: 'Competitive programming challenge.',
-      type: 'contest',
-      organizers: { organization_name: 'Code Arena' },
-      event_date: '2025-09-20T09:00:00Z',
-      location: 'Online',
-      capacity: 100,
-      tickets_issued: 100,
-      status: 'completed'
-    }
-  ];
-
-  const [events, setEvents] = useState(demoEvents);
-  const [filteredEvents, setFilteredEvents] = useState(demoEvents);
+  const [events, setEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [timeFilter, setTimeFilter] = useState('all');
   const [stats, setStats] = useState({ total: 0, upcoming: 0, past: 0, totalTickets: 0 });
   const [viewingEvent, setViewingEvent] = useState(null);
+
+  // Fetch events from API
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/events/all');
+      const data = await res.json();
+
+      if (data.success) {
+        // Map API response to frontend format
+        const apiEvents = data.data.map((event) => ({
+          id: event._id,
+          name: event.eventName,
+          description: event.description || '',
+          type: event.eventType.toLowerCase(),
+          organizers: { organization_name: event.organizerName },
+          event_date: event.date,
+          location: event.venueName,
+          capacity: event.capacity,
+          tickets_issued: event.attendeesCount || 0,
+          approval_comment: event.approvalComment || '',
+          status: event.status
+        }));
+        setEvents(apiEvents);
+        setFilteredEvents(apiEvents);
+      } else {
+        toast.error('Failed to fetch events');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Something went wrong while fetching events');
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   useEffect(() => {
     filterEvents();
@@ -89,6 +86,8 @@ const PublishedEvents = () => {
 
   return (
     <div>
+      <Toaster position="top-right" reverseOrder={false} />
+      
       <div className="stats-grid">
         <div className="stat-card">
           <Calendar className="stat-icon" size={32} />
@@ -163,7 +162,7 @@ const PublishedEvents = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredEvents.map((event) => {
+              {filteredEvents.length > 0 ? filteredEvents.map((event) => {
                 const isUpcoming = new Date(event.event_date) > new Date();
                 const ticketPercentage = (event.tickets_issued / event.capacity) * 100;
 
@@ -190,19 +189,16 @@ const PublishedEvents = () => {
                     </td>
                     <td>
                       <button className="btn btn-secondary" onClick={() => setViewingEvent(event)} title="View Details">
-                        <Eye size={14} />
+                        <Eye size={14} />View
                       </button>
                     </td>
                   </tr>
                 );
-              })}
+              }) : (
+                <tr><td colSpan="9" style={{ textAlign: 'center', padding: '16px' }}>No published events found</td></tr>
+              )}
             </tbody>
           </table>
-          {filteredEvents.length === 0 && (
-            <div className="empty-state">
-              <div className="empty-state-text">No published events found</div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -214,15 +210,15 @@ const PublishedEvents = () => {
               <button className="modal-close" onClick={() => setViewingEvent(null)}>×</button>
             </div>
             <div className="modal-body">
-              <div className="modal-field"><label className="modal-label">Event Name</label><div className="modal-value">{viewingEvent.name}</div></div>
-              <div className="modal-field"><label className="modal-label">Description</label><div className="modal-value">{viewingEvent.description}</div></div>
-              <div className="modal-field"><label className="modal-label">Type</label><div className="modal-value">{viewingEvent.type}</div></div>
-              <div className="modal-field"><label className="modal-label">Organizer</label><div className="modal-value">{viewingEvent.organizers?.organization_name}</div></div>
-              <div className="modal-field"><label className="modal-label">Date & Time</label><div className="modal-value">{new Date(viewingEvent.event_date).toLocaleString()}</div></div>
-              <div className="modal-field"><label className="modal-label">Location</label><div className="modal-value">{viewingEvent.location}</div></div>
-              <div className="modal-field"><label className="modal-label">Capacity</label><div className="modal-value">{viewingEvent.capacity} attendees</div></div>
-              <div className="modal-field"><label className="modal-label">Tickets Issued</label><div className="modal-value">{viewingEvent.tickets_issued} ({((viewingEvent.tickets_issued / viewingEvent.capacity) * 100).toFixed(1)}% filled)</div></div>
-              {viewingEvent.approval_comment && <div className="modal-field"><label className="modal-label">Admin Comment</label><div className="modal-value">{viewingEvent.approval_comment}</div></div>}
+              <div className="modal-field"><label>Event Name</label><div>{viewingEvent.name}</div></div>
+              <div className="modal-field"><label>Description</label><div>{viewingEvent.description}</div></div>
+              <div className="modal-field"><label>Type</label><div>{viewingEvent.type}</div></div>
+              <div className="modal-field"><label>Organizer</label><div>{viewingEvent.organizers?.organization_name}</div></div>
+              <div className="modal-field"><label>Date & Time</label><div>{new Date(viewingEvent.event_date).toLocaleString()}</div></div>
+              <div className="modal-field"><label>Location</label><div>{viewingEvent.location}</div></div>
+              <div className="modal-field"><label>Capacity</label><div>{viewingEvent.capacity} attendees</div></div>
+              <div className="modal-field"><label>Tickets Issued</label><div>{viewingEvent.tickets_issued} ({((viewingEvent.tickets_issued / viewingEvent.capacity) * 100).toFixed(1)}% filled)</div></div>
+              {viewingEvent.approval_comment && <div className="modal-field"><label>Admin Comment</label><div>{viewingEvent.approval_comment}</div></div>}
             </div>
             <div className="modal-footer"><button className="btn btn-secondary" onClick={() => setViewingEvent(null)}>Close</button></div>
           </div>

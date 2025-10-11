@@ -1,28 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TrendingUp, Users, Calendar, Ticket } from 'lucide-react';
+import axios from 'axios';
 
 const Analytics = () => {
-  // Hardcoded demo data
-  const stats = {
-    totalEvents: 30,
-    totalTickets: 450,
-    activeOrganizers: 25,
-    averageAttendance: 72.5,
-    eventsByType: {
-      conference: 8,
-      workshop: 12,
-      contest: 5,
-      seminar: 3,
-      other: 2
-    },
-    topOrganizers: [
-      { name: 'Tech Corp', events: 10 },
-      { name: 'Eventify', events: 8 },
-      { name: 'InnovateX', events: 6 },
-      { name: 'Alpha Org', events: 4 },
-      { name: 'Beta Group', events: 2 }
-    ]
-  };
+  const [stats, setStats] = useState({
+    totalEvents: 0,
+    totalTickets: 0,
+    activeOrganizers: 0,
+    averageAttendance: 0,
+    eventsByType: {},
+    topOrganizers: []
+  });
 
   const eventTypeColors = {
     conference: '#7C6BA5',
@@ -31,6 +19,77 @@ const Analytics = () => {
     seminar: '#E0CFFF',
     other: '#5A4E7C'
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch all events
+        const eventsRes = await axios.get('http://localhost:5000/api/events/all');
+        const events = eventsRes.data.data;
+
+        // Fetch all users
+        const usersRes = await axios.get('http://localhost:5000/api/auth/usersdata', {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer admin-token`
+          }
+        });
+        const users = usersRes.data.data;
+
+        // Fetch all contests
+        const contestsRes = await axios.get('http://localhost:5000/api/contests/');
+        const contests = contestsRes.data.contests;
+
+        // Compute stats
+        const totalEvents = events.length + contests.length;
+        const totalTickets = events.reduce((sum, e) => sum + (e.attendeesCount || 0), 0);
+        const activeOrganizers = users.filter(u => u.role === 'organizer').length;
+        const averageAttendance = events.length
+          ? (events.reduce((sum, e) => sum + (e.attendeesCount || 0), 0) / events.length) * 100
+          : 0;
+
+        // Events by type
+        const eventsByType = {};
+        events.forEach(e => {
+          const type = e.category?.toLowerCase() || 'other';
+          eventsByType[type] = (eventsByType[type] || 0) + 1;
+        });
+
+        contests.forEach(c => {
+          eventsByType['contest'] = (eventsByType['contest'] || 0) + 1;
+        });
+
+        // Top organizers
+        const organizersMap = {};
+        events.forEach(e => {
+          const org = e.organizerName || 'Unknown';
+          organizersMap[org] = (organizersMap[org] || 0) + 1;
+        });
+        contests.forEach(c => {
+          const org = c.organizer.fullName || 'Unknown';
+          organizersMap[org] = (organizersMap[org] || 0) + 1;
+        });
+
+        const topOrganizers = Object.entries(organizersMap)
+          .map(([name, events]) => ({ name, events }))
+          .sort((a, b) => b.events - a.events)
+          .slice(0, 5);
+
+        setStats({
+          totalEvents,
+          totalTickets,
+          activeOrganizers,
+          averageAttendance,
+          eventsByType,
+          topOrganizers
+        });
+      } catch (error) {
+        console.error('Error fetching analytics data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div>
@@ -68,7 +127,6 @@ const Analytics = () => {
             {Object.entries(stats.eventsByType).map(([type, count]) => {
               const maxCount = Math.max(...Object.values(stats.eventsByType));
               const percentage = (count / maxCount) * 100;
-
               return (
                 <div key={type}>
                   <div
@@ -141,10 +199,10 @@ const Analytics = () => {
                           index === 0
                             ? 'linear-gradient(135deg, #FFD700, #FFA500)'
                             : index === 1
-                            ? 'linear-gradient(135deg, #C0C0C0, #808080)'
-                            : index === 2
-                            ? 'linear-gradient(135deg, #CD7F32, #8B4513)'
-                            : '#E0CFFF',
+                              ? 'linear-gradient(135deg, #C0C0C0, #808080)'
+                              : index === 2
+                                ? 'linear-gradient(135deg, #CD7F32, #8B4513)'
+                                : '#E0CFFF',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -170,7 +228,7 @@ const Analytics = () => {
                       >
                         <div
                           style={{
-                            width: `${Math.min((org.events / 10) * 100, 100)}%`,
+                            width: `${Math.min((org.events / Math.max(...stats.topOrganizers.map(o => o.events))) * 100, 100)}%`,
                             height: '100%',
                             background: 'linear-gradient(90deg, #7C6BA5, #A084FF)',
                             transition: 'width 0.3s ease'

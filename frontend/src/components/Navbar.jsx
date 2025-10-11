@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, User, Bell } from "lucide-react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import "../styles/Navbar.css";
 
@@ -9,6 +9,7 @@ const Navbar = ({ additionalLinks = [] }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
   const [userName, setUserName] = useState("");
   const [role, setRole] = useState("");
+  const [pendingCount, setPendingCount] = useState(0);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,41 +17,41 @@ const Navbar = ({ additionalLinks = [] }) => {
   const buttonRef = useRef(null);
 
   // ✅ Fetch user info if token exists
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  const storedRole = localStorage.getItem("userRole");
-  const storedName = localStorage.getItem("userName");
-  const storedEmail = localStorage.getItem("userEmail");
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedRole = localStorage.getItem("userRole");
+    const storedName = localStorage.getItem("userName");
+    const storedEmail = localStorage.getItem("userEmail");
 
-  setIsLoggedIn(!!token);
+    setIsLoggedIn(!!token);
 
-  // ✅ Handle Admin separately (no JWT fetch)
-  if (storedRole === "admin") {
-    setUserName(storedName || "Admin");
-    setRole("admin");
-    return;
-  }
+    // ✅ Handle Admin separately (no JWT fetch)
+    if (storedRole === "admin") {
+      setUserName(storedName || "Admin");
+      setRole("admin");
+      return;
+    }
 
-  // ✅ For other users — fetch their info using JWT
-  if (token) {
-    fetch("http://localhost:5000/api/auth/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((data) => {
-        setUserName(data.user.fullName);
-        setRole(data.user.role);
+    // ✅ For other users — fetch their info using JWT
+    if (token) {
+      fetch("http://localhost:5000/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .catch(() => {
-        setIsLoggedIn(false);
-        setUserName("");
-        setRole("");
-      });
-  } else {
-    setUserName("");
-    setRole("");
-  }
-}, []);
+        .then((res) => (res.ok ? res.json() : Promise.reject()))
+        .then((data) => {
+          setUserName(data.user.fullName);
+          setRole(data.user.role);
+        })
+        .catch(() => {
+          setIsLoggedIn(false);
+          setUserName("");
+          setRole("");
+        });
+    } else {
+      setUserName("");
+      setRole("");
+    }
+  }, []);
 
 
   // ✅ Close dropdown on outside click
@@ -73,6 +74,11 @@ useEffect(() => {
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
   const handleLoginClick = () => navigate("/login");
   const handleUserIconClick = () => setDropdownOpen((prev) => !prev);
+
+  const handleNotificationClick = () => {
+    if (role === 'admin') navigate('/admin');
+    else navigate('/notifications');
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -129,6 +135,23 @@ useEffect(() => {
           <a href="#contact" className="navbar-item">
             Contact
           </a>
+
+          {role === "admin" && (
+            <>
+              <Link
+                to="/admin-dashboard"
+                className={`navbar-item ${isActive("/admin-dashboard")}`}
+              >
+                Dashboard
+              </Link>
+              <div className="notification-icon" onClick={handleNotificationClick}>
+                <Bell size={24} />
+                {pendingCount > 0 && (
+                  <span className="notification-badge">{pendingCount}</span>
+                )}
+              </div>
+            </>
+          )}
 
           {role === "attendee" && (
             <Link

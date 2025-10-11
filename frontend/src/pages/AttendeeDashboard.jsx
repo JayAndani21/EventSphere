@@ -20,12 +20,14 @@ const AttendeeDashboard = () => {
       }
 
       const response = await fetch("http://localhost:5000/api/events/all", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.ok) {
         const data = await response.json();
-        setEvents(data);
+        setEvents(Array.isArray(data.data) ? data.data : []);
       } else {
         console.error("Failed to fetch events");
       }
@@ -42,13 +44,15 @@ const AttendeeDashboard = () => {
         `http://localhost:5000/api/events/${eventId}/register`,
         {
           method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (response.ok) {
         alert("Registered successfully!");
-        fetchEvents();
+        fetchEvents(); // refresh events after registration
       } else {
         const data = await response.json();
         alert(data.message || "Registration failed");
@@ -93,27 +97,24 @@ const AttendeeDashboard = () => {
           <div className="section-header">
             <h2 className="section-title">Available Events</h2>
           </div>
-
           <div className="events-grid">
-            {events.length === 0 ? (
-              <p>No events available</p>
-            ) : (
+            {Array.isArray(events) && events.length > 0 ? (
               events.map((event) => (
                 <div key={event._id} className="event-card">
-                  <div className="event-image">
-                    <img
-                      src={
+                  <div
+                    className="event-image"
+                    style={{
+                      backgroundImage: `url(${
                         event.coverImageUrl ||
                         "https://via.placeholder.com/400x225"
-                      }
-                      alt={event.eventName}
-                    />
-                  </div>
+                      })`,
+                    }}
+                  ></div>
                   <div className="event-details">
                     <h3 className="event-title">{event.eventName}</h3>
                     <p className="event-organizer">
                       {event.organizer
-                        ? event.organizer.fullName
+                        ? event.organizer.email
                         : event.organizerName}
                     </p>
                     <div className="event-meta">
@@ -128,6 +129,8 @@ const AttendeeDashboard = () => {
                   </button>
                 </div>
               ))
+            ) : (
+              <p>No events available</p>
             )}
           </div>
         </section>

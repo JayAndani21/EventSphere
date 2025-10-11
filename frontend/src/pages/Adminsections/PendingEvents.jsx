@@ -1,89 +1,116 @@
 import { useState, useEffect } from 'react';
 import { Search, Eye, CheckCircle, X } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 
 const PendingEvents = () => {
-  // Demo events data
-  const demoEvents = [
-    {
-      id: 1,
-      name: 'Tech Conference 2025',
-      description: 'A conference about emerging tech trends.',
-      type: 'conference',
-      organizers: { organization_name: 'Tech Corp' },
-      event_date: '2025-11-15T10:00:00Z',
-      location: 'Mumbai Convention Center',
-      capacity: 200,
-      status: 'pending'
-    },
-    {
-      id: 2,
-      name: 'Startup Workshop',
-      description: 'Hands-on workshop for startup enthusiasts.',
-      type: 'workshop',
-      organizers: { organization_name: 'InnovateX' },
-      event_date: '2025-12-05T14:00:00Z',
-      location: 'Ahmedabad Hall',
-      capacity: 50,
-      status: 'pending'
-    }
-  ];
-
-  const [events, setEvents] = useState(demoEvents);
-  const [filteredEvents, setFilteredEvents] = useState(demoEvents);
+  const [events, setEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [viewingEvent, setViewingEvent] = useState(null);
   const [approvalComment, setApprovalComment] = useState('');
   const [actionType, setActionType] = useState(null);
 
+  const API_BASE = 'http://localhost:5000/api';
+
+  // Fetch pending/draft events from backend
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/events/all?status=draft`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer admin-token',
+        },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEvents(data.data);
+        setFilteredEvents(data.data);
+      } else {
+        toast.error(data.message || 'Failed to fetch events');
+      }
+    } catch (err) {
+      toast.error('Failed to fetch events');
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
-    filterEvents();
-  }, [searchTerm, typeFilter, events]);
+    fetchEvents();
+  }, []);
 
-  const filterEvents = () => {
+  // Filter events by search term and type
+  useEffect(() => {
     let filtered = [...events];
-
     if (searchTerm) {
       filtered = filtered.filter((event) =>
-        event.name.toLowerCase().includes(searchTerm.toLowerCase())
+        event.eventName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
     if (typeFilter !== 'all') {
-      filtered = filtered.filter((event) => event.type === typeFilter);
+      filtered = filtered.filter((event) => event.eventType.toLowerCase() === typeFilter);
     }
-
     setFilteredEvents(filtered);
+  }, [searchTerm, typeFilter, events]);
+
+  const handleApprove = async (event) => {
+    try {
+      const res = await fetch(`${API_BASE}/events/${event._id}/approve`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer admin-token',
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setEvents((prev) => prev.filter((ev) => ev._id !== event._id));
+        setFilteredEvents((prev) => prev.filter((ev) => ev._id !== event._id));
+        toast.success('✅ Event approved successfully');
+      } else {
+        toast.error(data.message || 'Failed to approve event');
+      }
+    } catch (err) {
+      toast.error('Failed to approve event');
+      console.error(err);
+    } finally {
+      setViewingEvent(null);
+      setActionType(null);
+      setApprovalComment('');
+    }
   };
 
-  const handleApprove = (event) => {
-    setEvents((prev) =>
-      prev.map((ev) =>
-        ev.id === event.id
-          ? { ...ev, status: 'approved', approval_comment: approvalComment || 'Approved' }
-          : ev
-      )
-    );
-    setViewingEvent(null);
-    setActionType(null);
-    setApprovalComment('');
-  };
-
-  const handleReject = (event) => {
+  const handleReject = async (event) => {
     if (!approvalComment.trim()) {
-      alert('Please provide a reason for rejection');
+      toast.error('Please provide a reason for rejection');
       return;
     }
-    setEvents((prev) =>
-      prev.map((ev) =>
-        ev.id === event.id
-          ? { ...ev, status: 'rejected', approval_comment: approvalComment }
-          : ev
-      )
-    );
-    setViewingEvent(null);
-    setActionType(null);
-    setApprovalComment('');
+    try {
+      const res = await fetch(`${API_BASE}/events/${event._id}/reject`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer admin-token',
+        },
+        body: JSON.stringify({ comment: approvalComment }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setEvents((prev) => prev.filter((ev) => ev._id !== event._id));
+        setFilteredEvents((prev) => prev.filter((ev) => ev._id !== event._id));
+        toast.error('Event rejected successfully');
+      } else {
+        toast.error(data.message || 'Failed to reject event');
+      }
+    } catch (err) {
+      toast.error('Failed to reject event');
+      console.error(err);
+    } finally {
+      setViewingEvent(null);
+      setActionType(null);
+      setApprovalComment('');
+    }
   };
 
   const openApprovalModal = (event, type) => {
@@ -94,6 +121,7 @@ const PendingEvents = () => {
 
   return (
     <div>
+      <Toaster position="top-right" />
       <div className="section">
         <div className="section-header">
           <h2 className="section-title">Pending Events Approval</h2>
@@ -116,11 +144,8 @@ const PendingEvents = () => {
           </div>
           <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
             <option value="all">All Types</option>
-            <option value="conference">Conference</option>
-            <option value="workshop">Workshop</option>
-            <option value="contest">Contest</option>
-            <option value="seminar">Seminar</option>
-            <option value="other">Other</option>
+            <option value="offline">Offline</option>
+            <option value="online">Online</option>
           </select>
         </div>
 
@@ -138,50 +163,53 @@ const PendingEvents = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredEvents.map((event) => (
-                <tr key={event.id}>
-                  <td>{event.name}</td>
-                  <td style={{ textTransform: 'capitalize' }}>{event.type}</td>
-                  <td>{event.organizers?.organization_name}</td>
-                  <td>{new Date(event.event_date).toLocaleString()}</td>
-                  <td>{event.capacity}</td>
-                  <td>
-                    <span className={`status-badge status-${event.status}`}>{event.status}</span>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        className="btn btn-secondary"
-                        onClick={() => { setViewingEvent(event); setActionType(null); }}
-                        title="View Details"
-                      >
-                        <Eye size={14} />
-                      </button>
-                      <button
-                        className="btn btn-approve"
-                        onClick={() => openApprovalModal(event, 'approve')}
-                        title="Approve"
-                      >
-                        <CheckCircle size={14} />
-                      </button>
-                      <button
-                        className="btn btn-reject"
-                        onClick={() => openApprovalModal(event, 'reject')}
-                        title="Reject"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
+              {Array.isArray(filteredEvents) && filteredEvents.length > 0 ? (
+                filteredEvents.map((event) => (
+                  <tr key={event._id}>
+                    <td>{event.eventName}</td>
+                    <td style={{ textTransform: 'capitalize' }}>{event.eventType}</td>
+                    <td>{event.organizerName}</td>
+                    <td>{new Date(event.date).toLocaleString()}</td>
+                    <td>{event.capacity}</td>
+                    <td>
+                      <span className={`status-badge status-${event.status}`}>{event.status}</span>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => { setViewingEvent(event); setActionType(null); }}
+                          title="View Details"
+                        >
+                          <Eye size={14} />View
+                        </button>
+                        <button
+                          className="btn btn-approve"
+                          onClick={() => openApprovalModal(event, 'approve')}
+                          title="Approve"
+                        >
+                          <CheckCircle size={14} />Approve
+                        </button>
+                        <button
+                          className="btn btn-reject"
+                          onClick={() => openApprovalModal(event, 'reject')}
+                          title="Reject"
+                        >
+                          <X size={14} />Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '20px' }}>
+                    No pending events
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
-          {filteredEvents.length === 0 && (
-            <div className="empty-state">
-              <div className="empty-state-text">No pending events</div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -199,33 +227,24 @@ const PendingEvents = () => {
             <div className="modal-body">
               <div className="modal-field">
                 <label className="modal-label">Event Name</label>
-                <div className="modal-value">{viewingEvent.name}</div>
-              </div>
-              <div className="modal-field">
-                <label className="modal-label">Description</label>
-                <div className="modal-value">{viewingEvent.description}</div>
+                <div className="modal-value">{viewingEvent.eventName}</div>
               </div>
               <div className="modal-field">
                 <label className="modal-label">Type</label>
-                <div className="modal-value" style={{ textTransform: 'capitalize' }}>{viewingEvent.type}</div>
+                <div className="modal-value" style={{ textTransform: 'capitalize' }}>{viewingEvent.eventType}</div>
               </div>
               <div className="modal-field">
                 <label className="modal-label">Organizer</label>
-                <div className="modal-value">{viewingEvent.organizers?.organization_name}</div>
+                <div className="modal-value">{viewingEvent.organizerName}</div>
               </div>
               <div className="modal-field">
                 <label className="modal-label">Date & Time</label>
-                <div className="modal-value">{new Date(viewingEvent.event_date).toLocaleString()}</div>
-              </div>
-              <div className="modal-field">
-                <label className="modal-label">Location</label>
-                <div className="modal-value">{viewingEvent.location}</div>
+                <div className="modal-value">{new Date(viewingEvent.date).toLocaleString()}</div>
               </div>
               <div className="modal-field">
                 <label className="modal-label">Capacity</label>
-                <div className="modal-value">{viewingEvent.capacity} attendees</div>
+                <div className="modal-value">{viewingEvent.capacity}</div>
               </div>
-
               {actionType && (
                 <div className="modal-field">
                   <label className="modal-label">
@@ -250,25 +269,21 @@ const PendingEvents = () => {
               </button>
               {actionType === 'approve' && (
                 <button className="btn btn-approve" onClick={() => handleApprove(viewingEvent)}>
-                  <CheckCircle size={16} />
-                  Approve Event
+                  <CheckCircle size={16} /> Approve Event
                 </button>
               )}
               {actionType === 'reject' && (
                 <button className="btn btn-reject" onClick={() => handleReject(viewingEvent)}>
-                  <X size={16} />
-                  Reject Event
+                  <X size={16} /> Reject Event
                 </button>
               )}
               {!actionType && (
                 <>
                   <button className="btn btn-approve" onClick={() => setActionType('approve')}>
-                    <CheckCircle size={16} />
-                    Approve
+                    <CheckCircle size={16} /> Approve
                   </button>
                   <button className="btn btn-reject" onClick={() => setActionType('reject')}>
-                    <X size={16} />
-                    Reject
+                    <X size={16} /> Reject
                   </button>
                 </>
               )}
