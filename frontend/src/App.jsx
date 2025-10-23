@@ -18,6 +18,8 @@ import CreateEvent from "./pages/CreateEvent";
 import AdminDashboard from "./pages/AdminDashboard";
 import Navbar from "./components/Navbar";
 import TicketPage from "./pages/TicketPage";  
+import ContestRegistrationPage from "./pages/ContestRegistrationPage";
+import MyContests from "./pages/MyContests";
 
 /* ───────────────────────── Protected wrapper ───────────────────────── */
 const ProtectedRoute = () => {
@@ -43,6 +45,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/contest/:id" element={<ContestRegistrationPage />} />
         </Route>
 
         {/* Protected routes */}
@@ -56,6 +59,7 @@ export default function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/ticketpage" element={<TicketPage />} />
             <Route path="/home" element={<HomePage />} />
+            <Route path="/my-contests" element={<MyContests />} />
           </Route>
         </Route>
 

@@ -113,6 +113,15 @@ const Navbar = ({ additionalLinks = [] }) => {
             Home
           </Link>
 
+          {isLoggedIn && (
+            <Link
+              to="/my-contests"
+              className={`navbar-item ${isActive("/my-contests")}`}
+            >
+              My Contests
+            </Link>
+          )}
+
           {role === "organizer" && (
             <Link
               to="/organizer-dashboard"
