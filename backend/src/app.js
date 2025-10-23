@@ -15,6 +15,7 @@ const contestRoutes = require('./routes/contestRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const participantRoutes = require('./routes/participantRoutes');
 const errorMiddleware = require('./middleware/errorMiddleware');
+const submissionRoutes = require("./routes/submissionRoutes");
 
 // ✅ Middleware
 app.use(cors({
@@ -54,6 +55,7 @@ app.use('/api/event-participants', eventParticipantRoutes);
 app.use('/api/contests', contestRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/participants', participantRoutes);
+app.use("/api/submissions", submissionRoutes);
 
 
 // ✅ Error handling

@@ -1,19 +1,17 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const auth = require('../middleware/authMiddleware');
-const {
-  register,
-  getParticipants,
-  removeParticipant
-} = require('../controllers/participantController');
+const participantController = require("../controllers/participantController");
+const auth  = require("../middleware/authMiddleware");
 
-// Register for contest
-router.post('/:id/register', auth, register);
+// User routes
+router.post("/:contestId/register", auth, participantController.registerParticipant);
+router.get("/my-contests", auth, participantController.getUserContests);
 
-// Get participants (organizer only)
-router.get('/:id/participants', auth, getParticipants);
-
-// Remove participant (organizer only)
-router.delete('/:id/participants/:userId', auth, removeParticipant);
+// Admin / contest owner routes
+router.get("/:contestId/all", auth, participantController.getParticipantsByContest);
+router.put("/:participantId/update-score", auth, participantController.updateScore);
+router.put("/:participantId/disqualify", auth, participantController.disqualifyParticipant);
+router.delete("/:participantId/remove", auth, participantController.removeParticipant);
+router.get("/:contestId/leaderboard", auth, participantController.getLeaderboard);
 
 module.exports = router;

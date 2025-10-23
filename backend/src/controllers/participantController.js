@@ -1,71 +1,158 @@
-const Participant = require('../models/participant.model');
-const Contest = require('../models/contest.model');
+const Participant = require("../models/participant.model");
+const Contest = require("../models/contest.model");
+const User = require("../models/User");
 
-// ✅ Register (join) a contest
-exports.register = async (req, res) => {
+// ✅ Register user for a contest
+exports.registerParticipant = async (req, res) => {
   try {
-    const { id } = req.params; // contestId
-    const contest = await Contest.findById(id);
-    if (!contest) return res.status(404).json({ message: 'Contest not found' });
+    const { contestId } = req.params;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Prevent late registration
-    if (contest.registrationDeadline && new Date() > contest.registrationDeadline)
-      return res.status(400).json({ message: 'Registration deadline has passed' });
+    const existing = await Participant.findOne({ contestId, userId });
+    if (existing) return res.status(400).json({ message: "Already registered" });
 
-    const exists = await Participant.findOne({ contestId: id, userId: req.user.id });
-    if (exists) return res.status(400).json({ message: 'Already registered' });
-
-    const participant = await Participant.create({
-      contestId: id,
-      userId: req.user.id,
-      userName: req.user.fullName,
-      userEmail: req.user.email,
+    const participant = new Participant({
+      contestId,
+      userId,
+      userName: user.fullName,
+      userEmail: user.email,
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"],
     });
 
-    contest.stats.totalParticipants += 1;
-    await contest.save();
-
-    res.status(201).json({ message: 'Registered successfully', participant });
+    await participant.save();
+    res.status(201).json({ message: "Registration successful", participant });
   } catch (error) {
-    res.status(400).json({ message: 'Failed to register', error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ Get participants of a contest (organizer only)
-exports.getParticipants = async (req, res) => {
+// ✅ Get all participants of a contest (Admin only)
+exports.getParticipantsByContest = async (req, res) => {
   try {
-    const { id } = req.params; // contestId
-    const contest = await Contest.findById(id);
-    if (!contest) return res.status(404).json({ message: 'Contest not found' });
+    const { contestId } = req.params;
+    const participants = await Participant.find({ contestId })
+      .populate("userId", "name email")
+      .sort({ score: -1, penalty: 1 });
 
-    if (contest.organizer.toString() !== req.user.id.toString())
-      return res.status(403).json({ message: 'Access denied: only organizer can view participants' });
-
-    const participants = await Participant.find({ contestId: id }).sort({ registeredAt: -1 });
-    res.json({ participants });
+    res.json(participants);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch participants', error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ Remove participant (organizer action)
+// ✅ Get contests a user registered for
+exports.getUserContests = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Fetch all participant entries for this user
+    const participants = await Participant.find({ userId })
+      .sort({ registeredAt: -1 })
+      .lean(); // lean() gives plain JS objects
+
+    // For each participant, fetch contest details
+    const contestsWithTimes = await Promise.all(
+      participants.map(async (p) => {
+        const contest = await Contest.findById(p.contestId).lean();
+
+        if (!contest) return null; // skip if contest not found
+
+        return {
+          ...p,
+          contestId: {
+            _id: contest._id,
+            name: contest.name,
+            startDate: contest.startDate,
+            endDate: contest.endDate,
+          },
+        };
+      })
+    );
+
+    // Remove nulls in case some contests are deleted
+    const filtered = contestsWithTimes.filter(c => c !== null);
+
+    res.json(filtered);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+// ✅ Update participant score (e.g., after a submission)
+exports.updateScore = async (req, res) => {
+  try {
+    const { participantId } = req.params;
+    const { score, penalty, problemId, solved } = req.body;
+
+    const participant = await Participant.findById(participantId);
+    if (!participant) return res.status(404).json({ message: "Participant not found" });
+
+    participant.score = score ?? participant.score;
+    participant.penalty = penalty ?? participant.penalty;
+    participant.lastActivityAt = new Date();
+
+    if (problemId) {
+      const problemIndex = participant.problems.findIndex(p => p.problemId.toString() === problemId);
+      if (problemIndex >= 0) {
+        participant.problems[problemIndex].solved = solved ?? participant.problems[problemIndex].solved;
+      }
+    }
+
+    await participant.save();
+    res.json({ message: "Score updated", participant });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ✅ Disqualify participant
+exports.disqualifyParticipant = async (req, res) => {
+  try {
+    const { participantId } = req.params;
+    const { reason } = req.body;
+
+    const participant = await Participant.findByIdAndUpdate(
+      participantId,
+      { status: "disqualified", disqualifiedReason: reason },
+      { new: true }
+    );
+
+    if (!participant) return res.status(404).json({ message: "Participant not found" });
+    res.json({ message: "Participant disqualified", participant });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ✅ Leaderboard (sorted by score and penalty)
+exports.getLeaderboard = async (req, res) => {
+  try {
+    const { contestId } = req.params;
+    const leaderboard = await Participant.find({ contestId, status: { $ne: "disqualified" } })
+      .select("userName score penalty rank")
+      .sort({ score: -1, penalty: 1 });
+
+    leaderboard.forEach((p, i) => (p.rank = i + 1));
+    res.json(leaderboard);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ✅ Remove participant (admin or contest owner)
 exports.removeParticipant = async (req, res) => {
   try {
-    const { id, userId } = req.params;
-    const contest = await Contest.findById(id);
-    if (!contest) return res.status(404).json({ message: 'Contest not found' });
+    const { participantId } = req.params;
+    const participant = await Participant.findByIdAndDelete(participantId);
+    if (!participant) return res.status(404).json({ message: "Participant not found" });
 
-    if (contest.organizer.toString() !== req.user.id.toString())
-      return res.status(403).json({ message: 'Access denied' });
-
-    const removed = await Participant.findOneAndDelete({ contestId: id, userId });
-    if (!removed) return res.status(404).json({ message: 'Participant not found' });
-
-    contest.stats.totalParticipants = Math.max(0, contest.stats.totalParticipants - 1);
-    await contest.save();
-
-    res.json({ message: 'Participant removed successfully' });
+    res.json({ message: "Participant removed" });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to remove participant', error: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
