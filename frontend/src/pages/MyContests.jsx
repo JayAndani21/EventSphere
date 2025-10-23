@@ -5,11 +5,19 @@ import "../styles/ContestList.css";
 const MyContests = () => {
   const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchMyContests();
   }, []);
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: "", type: "" });
+    }, 3000);
+  };
 
   const fetchMyContests = async () => {
     setLoading(true);
@@ -36,6 +44,32 @@ const MyContests = () => {
     }
   };
 
+  const handleUnregister = async (contestId) => {
+    if (!window.confirm("Are you sure you want to unregister from this contest?")) {
+      return;
+    }
+   
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:5000/api/participants/${contestId}/unregister`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        await fetchMyContests();
+        showToast("Unregistered successfully", "success");
+      } else {
+        const data = await res.json();
+        showToast(data.message || "Unregistration failed", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Unregistration failed", "error");
+    }
+  };
+
   if (loading) {
     return (
       <div className="contest-list-wrapper">
@@ -51,6 +85,25 @@ const MyContests = () => {
 
   return (
     <div className="contest-list-wrapper">
+      {toast.show && (
+        <div className={`toast toast-${toast.type}`}>
+          <div className="toast-content">
+            {toast.type === "success" ? (
+              <svg className="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            ) : (
+              <svg className="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            )}
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+      
       <div className="contest-list">
         <div className="contest-header">
           <h2>My Registered Contests</h2>
@@ -113,6 +166,16 @@ const MyContests = () => {
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
                       </svg>
+                    </button>
+                    <button
+                      className="unregister-btn"
+                      onClick={() => handleUnregister(contest._id)}
+                    >
+                      <svg className="cross-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                      <span>Unregister</span>
                     </button>
                   </div>
                 </div>

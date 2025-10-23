@@ -83,16 +83,32 @@ export default function ContestPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [modalOpen, setModalOpen] = useState(false);
   const [registering, setRegistering] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [checkingRegistration, setCheckingRegistration] = useState(true);
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const shareRef = useRef(null);
 
-  useEffect(() => {
-    if (!contest) fetchContest();
-  }, [id]);
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: "", type: "" });
+    }, 3000);
+  };
 
   const fetchContest = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/contests/${id}`);
+      const token = localStorage.getItem("token");
+      
+      // Fetch contest details
+      const res = await fetch(`http://localhost:5000/api/contests/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
       if (!res.ok) {
         console.error("Failed to load contest");
         setLoading(false);
@@ -100,12 +116,105 @@ export default function ContestPage() {
       }
       const data = await res.json();
       setContest(data.contest || data);
+      
+      // Check if user is registered
+      if (token) {
+        await checkRegistrationStatus(token);
+      } else {
+        setCheckingRegistration(false);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching contest:", err);
     } finally {
       setLoading(false);
     }
   };
+
+  const checkRegistrationStatus = async (token) => {
+    try {
+      setCheckingRegistration(true);
+      console.log("🔍 Checking registration for contest:", id);
+      
+      const regRes = await fetch(`http://localhost:5000/api/participants/${id}/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      console.log("📡 API Response Status:", regRes.status);
+      
+      if (regRes.ok) {
+        const participants = await regRes.json();
+        console.log("👥 All Participants:", participants);
+        
+        // Get user email from localStorage as primary identifier
+        const userEmail = localStorage.getItem("userEmail");
+        console.log("📧 Current User Email from localStorage:", userEmail);
+        
+        // Also try to decode token for additional verification
+        let tokenEmail = null;
+        let tokenUserId = null;
+        try {
+          const decoded = JSON.parse(atob(token.split(".")[1]));
+          tokenEmail = decoded.email;
+          tokenUserId = decoded.id || decoded._id || decoded.userId;
+          console.log("🔑 Decoded Token - Email:", tokenEmail, "UserId:", tokenUserId);
+        } catch (e) {
+          console.error("❌ Error decoding token:", e);
+        }
+        
+        // Check if user is in the participants array
+        let found = false;
+        if (Array.isArray(participants)) {
+          console.log("🔎 Checking through", participants.length, "participants...");
+          
+          found = participants.some((p) => {
+            console.log("Checking participant:", {
+              userEmail: p.userEmail,
+              userId_id: p.userId?._id,
+              userId_email: p.userId?.email
+            });
+            
+            // Check by email (most reliable)
+            if (userEmail && (p.userEmail === userEmail || p.userId?.email === userEmail)) {
+              console.log("✅ Match found by email!");
+              return true;
+            }
+            
+            // Fallback: Check by userId
+            if (tokenUserId) {
+              const participantId = p.userId?._id || p.userId;
+              if (participantId === tokenUserId) {
+                console.log("✅ Match found by userId!");
+                return true;
+              }
+            }
+            
+            return false;
+          });
+        } else {
+          console.warn("⚠️ Participants is not an array:", participants);
+        }
+        
+        console.log("🎯 Final Registration Status:", found);
+        setIsRegistered(found);
+      } else {
+        console.error("❌ API request failed with status:", regRes.status);
+      }
+    } catch (err) {
+      console.error("❌ Error checking registration:", err);
+    } finally {
+      console.log("✅ Setting checkingRegistration to false");
+      setCheckingRegistration(false);
+    }
+  };
+
+  useEffect(() => {
+    console.log("🚀 Component mounted, fetching contest...");
+    fetchContest();
+  }, [id]);
+
+  useEffect(() => {
+    console.log("🔄 State update - checkingRegistration:", checkingRegistration, "isRegistered:", isRegistered);
+  }, [checkingRegistration, isRegistered]);
 
   const handleRegister = async () => {
     try {
@@ -117,21 +226,52 @@ export default function ContestPage() {
       setRegistering(true);
       const res = await fetch(`http://localhost:5000/api/participants/${id}/register`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (res.ok) {
         setModalOpen(false);
+        setIsRegistered(true);
         await fetchContest();
-        alert("Registered successfully");
+        showToast("Registered successfully", "success");
       } else {
-        const d = await res.json();
-        alert(d.message || "Registration failed");
+        const data = await res.json();
+        showToast(data.message || "Registration failed", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Registration failed");
+      showToast("Registration failed", "error");
     } finally {
       setRegistering(false);
+    }
+  };
+
+  const handleUnregister = async () => {
+    if (!window.confirm("Are you sure you want to unregister from this contest?")) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:5000/api/participants/${id}/unregister`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setIsRegistered(false);
+        await fetchContest();
+        showToast("Unregistered successfully", "success");
+      } else {
+        const data = await res.json();
+        showToast(data.message || "Unregistration failed", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Unregistration failed", "error");
     }
   };
 
@@ -184,6 +324,25 @@ export default function ContestPage() {
 
   return (
     <div className="dashboard">
+      {toast.show && (
+        <div className={`toast toast-${toast.type}`}>
+          <div className="toast-content">
+            {toast.type === "success" ? (
+              <svg className="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            ) : (
+              <svg className="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            )}
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       <div className="dashboard-content">
         <div className="contest-page-new">
           {/* Hero Section */}
@@ -228,17 +387,33 @@ export default function ContestPage() {
             <div className="hero-actions">
               <Countdown endDate={endDate} />
               <div className="action-buttons">
-                <button className="btn-primary" onClick={() => setModalOpen(true)}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                    <circle cx="8.5" cy="7" r="4" />
-                    <line x1="20" y1="8" x2="20" y2="14" />
-                    <line x1="23" y1="11" x2="17" y2="11" />
-                  </svg>
-                  Register Now
-                </button>
+                {checkingRegistration ? (
+                  <button className="btn-primary" disabled>
+                    Checking...
+                  </button>
+                ) : isRegistered ? (
+                  <button className="btn-danger" onClick={handleUnregister}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                      <circle cx="8.5" cy="7" r="4" />
+                      <line x1="17" y1="8" x2="23" y2="14" />
+                      <line x1="23" y1="8" x2="17" y2="14" />
+                    </svg>
+                    Unregister
+                  </button>
+                ) : (
+                  <button className="btn-primary" onClick={() => setModalOpen(true)}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                      <circle cx="8.5" cy="7" r="4" />
+                      <line x1="20" y1="8" x2="20" y2="14" />
+                      <line x1="23" y1="11" x2="17" y2="11" />
+                    </svg>
+                    Register Now
+                  </button>
+                )}
                 <button className="btn-secondary" onClick={copyLink} ref={shareRef}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="18" cy="5" r="3" />
                     <circle cx="6" cy="12" r="3" />
                     <circle cx="18" cy="19" r="3" />
@@ -306,6 +481,15 @@ export default function ContestPage() {
                       </span>
                     </div>
                     <div className="stat-row">
+                      <span className="stat-label">Registration</span>
+                      <span className="stat-value status-badge" style={{
+                        background: isRegistered ? '#dcfce7' : '#fee2e2',
+                        color: isRegistered ? '#166534' : '#991b1b'
+                      }}>
+                        {isRegistered ? "✓ Registered" : "Not Registered"}
+                      </span>
+                    </div>
+                    <div className="stat-row">
                       <span className="stat-label">Visibility</span>
                       <span className="stat-value">{contest.visibility || "Public"}</span>
                     </div>
@@ -349,35 +533,6 @@ export default function ContestPage() {
                   ) : (
                     <div className="empty-state">No prize information available</div>
                   )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === "problems" && (
-              <div className="content-main single">
-                <div className="info-card">
-                  <h2>Problems</h2>
-                  <div className="empty-state">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                      <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
-                    </svg>
-                    <p>Problems will be available once the contest starts</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "leaderboard" && (
-              <div className="content-main single">
-                <div className="info-card">
-                  <h2>Leaderboard</h2>
-                  <div className="empty-state">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
-                    </svg>
-                    <p>Leaderboard will be available during the contest</p>
-                  </div>
                 </div>
               </div>
             )}
