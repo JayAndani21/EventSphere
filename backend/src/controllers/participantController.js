@@ -7,12 +7,20 @@ exports.registerParticipant = async (req, res) => {
   try {
     const { contestId } = req.params;
     const userId = req.user.id;
+
+    // ✅ 1. Find user
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // ✅ 2. Check if contest exists
+    const contest = await Contest.findById(contestId);
+    if (!contest) return res.status(404).json({ message: "Contest not found" });
+
+    // ✅ 3. Check if already registered
     const existing = await Participant.findOne({ contestId, userId });
     if (existing) return res.status(400).json({ message: "Already registered" });
 
+    // ✅ 4. Register participant
     const participant = new Participant({
       contestId,
       userId,
@@ -23,11 +31,44 @@ exports.registerParticipant = async (req, res) => {
     });
 
     await participant.save();
+
+    // ✅ 5. Increment participant count in contest stats
+    await Contest.findByIdAndUpdate(
+      contestId,
+      { $inc: { "stats.totalParticipants": 1 } },
+      { new: true }
+    );
+
     res.status(201).json({ message: "Registration successful", participant });
   } catch (error) {
+    console.error("Registration error:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
+// ✅ Unregister user from a contest
+exports.unregisterParticipant = async (req, res) => {
+  try {
+    const { contestId } = req.params;
+    const userId = req.user.id;
+
+    const participant = await Participant.findOneAndDelete({ contestId, userId });
+    if (!participant) {
+      return res.status(404).json({ message: "Not registered" });
+    }
+
+    // Decrease totalParticipants in contest
+    await Contest.findByIdAndUpdate(contestId, {
+      $inc: { "stats.totalParticipants": -1 },
+    });
+
+    res.status(200).json({ message: "Unregistered successfully" });
+  } catch (error) {
+    console.error("Error unregistering participant:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 // ✅ Get all participants of a contest (Admin only)
 exports.getParticipantsByContest = async (req, res) => {

@@ -5,6 +5,7 @@ const auth  = require("../middleware/authMiddleware");
 
 // User routes
 router.post("/:contestId/register", auth, participantController.registerParticipant);
+router.delete("/:contestId/unregister", auth, participantController.unregisterParticipant);
 router.get("/my-contests", auth, participantController.getUserContests);
 
 // Admin / contest owner routes
