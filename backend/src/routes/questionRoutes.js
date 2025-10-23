@@ -11,7 +11,7 @@ const {
 
 // Add and get questions for a contest
 router.post('/:id/questions', auth, addQuestion);
-router.get('/:id/questions', getQuestionsByContest);
+router.get('/:id/questions', auth, getQuestionsByContest);
 
 // Individual question operations
 router.get('/single/:qid', getQuestionById);

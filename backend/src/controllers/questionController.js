@@ -26,13 +26,18 @@ exports.addQuestion = async (req, res) => {
 // ✅ Get all questions for a contest
 exports.getQuestionsByContest = async (req, res) => {
   try {
-    const { id } = req.params;
-    const questions = await Question.find({ contestId: id });
-    res.json({ questions });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch questions', error: error.message });
+    const contestId = req.params.id;
+    const questions = await Question.find({ contestId });
+
+    if (!questions || questions.length === 0)
+      return res.status(404).json({ message: 'No questions found for this contest' });
+
+    res.status(200).json({ success: true, questions });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch questions', error: err.message });
   }
 };
+
 
 // ✅ Get a single question by ID
 exports.getQuestionById = async (req, res) => {
