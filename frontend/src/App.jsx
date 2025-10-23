@@ -20,6 +20,8 @@ import Navbar from "./components/Navbar";
 import TicketPage from "./pages/TicketPage";  
 import ContestRegistrationPage from "./pages/ContestRegistrationPage";
 import MyContests from "./pages/MyContests";
+import ProblemList from "./pages/ProblemList";
+import Problem from "./pages/Problem";
 
 /* ───────────────────────── Protected wrapper ───────────────────────── */
 const ProtectedRoute = () => {
@@ -60,6 +62,8 @@ export default function App() {
             <Route path="/ticketpage" element={<TicketPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/my-contests" element={<MyContests />} />
+            <Route path="/contest/:id/problems" element={<ProblemList />} />
+            <Route path="/contest/:id/problem/:problemId" element={<Problem />} />
           </Route>
         </Route>
 

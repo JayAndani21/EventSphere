@@ -1,0 +1,69 @@
+/* Problem detail specific styles */
+
+.problem-container {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+  min-height: calc(100vh - 80px);
+  background: #f8fafc;
+}
+
+.problem-card {
+  width: 100%;
+  max-width: 900px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(2,6,23,0.06);
+}
+
+.problem-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.problem-meta {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.problem-statement {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  background: #0f1724;
+  color: #e6edf3;
+  padding: 20px;
+  border-radius: 6px;
+  overflow: auto;
+  max-height: 60vh;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.problem-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.submit-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .problem-statement {
+    max-height: 50vh;
+    padding: 12px;
+  }
+  .problem-card {
+    padding: 12px;
+  }
+}

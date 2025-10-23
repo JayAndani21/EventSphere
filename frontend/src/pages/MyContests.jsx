@@ -159,7 +159,7 @@ const MyContests = () => {
                   <div className="contest-card-footer">
                     <button
                       className="enter-btn"
-                      onClick={() => navigate(`/contest/${contest._id}`)}
+                      onClick={() => navigate(`/contest/${contest._id}/problems`)}
                     >
                       <span>Enter Contest</span>
                       <svg className="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
