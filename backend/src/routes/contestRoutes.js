@@ -11,17 +11,27 @@ const {
   joinContest,
   leaveContest,
   getContestParticipants,
+  updateContestStatus,
+  getPendingContests,
+  approveContest,
+  rejectContest
 } = require('../controllers/contestController');
 
 // Public routes
 router.get('/', getAllContests);
 router.get('/:id', auth, getContest);
 
-// Organizer routes
+// Organizer/Admin routes
 router.post('/', auth, createContest);
 router.get('/me/my-contests', auth, getMyContests);
 router.put('/:id', auth, updateContest);
+router.patch('/:id/status', auth, updateContestStatus); // ✅ Admin-only approval route
 router.delete('/:id', auth, deleteContest);
+
+// Admin-only routes for approval dashboard
+router.get('/admin/pending', auth, getPendingContests); // Fetch all draft contests
+router.patch('/:id/approve', auth, approveContest); // Approve a contest
+router.patch('/:id/reject', auth, rejectContest);       // Reject contest 
 
 // Participant routes
 router.post('/:id/join', auth, joinContest);
