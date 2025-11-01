@@ -7,10 +7,17 @@ exports.createEvent = async (req, res) => {
     const organizer = await User.findById(req.user.id);
     if (!organizer) return res.status(404).json({ message: "Organizer not found" });
 
+    const data = { ...req.body };
+
+    // Remove empty optional fields for Online events
+    Object.keys(data).forEach((key) => {
+      if (data[key] === "" || data[key] === null) delete data[key];
+    });
+
     const event = new Event({
-      ...req.body,
+      ...data,
       status: "draft",
-      organizer: organizer._id
+      organizer: organizer._id,
     });
 
     await event.save();
@@ -20,8 +27,10 @@ exports.createEvent = async (req, res) => {
       event
     });
   } catch (error) {
-    res.status(400).json({ message: "Failed to create event", error: error.message });
-  }
+  console.error("Create Event Error:", error);
+  res.status(400).json({ message: "Failed to create event", error: error.message });
+}
+
 };
 
 // ✅ Get all public (published) events

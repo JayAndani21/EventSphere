@@ -16,6 +16,7 @@ const questionRoutes = require('./routes/questionRoutes');
 const participantRoutes = require('./routes/participantRoutes');
 const errorMiddleware = require('./middleware/errorMiddleware');
 const submissionRoutes = require("./routes/submissionRoutes");
+const pistonRoutes = require("./routes/pistonRoutes");
 
 // ✅ Middleware
 app.use(cors({
@@ -36,11 +37,11 @@ cloudinary.config({
 app.post('/api/upload', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
+    
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: 'events'
     });
-
+    
     res.json({ imageUrl: result.secure_url });
   } catch (err) {
     console.error(err);
@@ -56,6 +57,7 @@ app.use('/api/contests', contestRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/participants', participantRoutes);
 app.use("/api/submissions", submissionRoutes);
+app.use("/api/piston", pistonRoutes);
 
 
 // ✅ Error handling
