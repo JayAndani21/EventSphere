@@ -5,6 +5,7 @@
   font-family: 'Roboto', 'Poppins', sans-serif;
 }
 
+/* ===== SIDEBAR ===== */
 .sidebar {
   width: 260px;
   background-color: #8b5cf6;
@@ -56,6 +57,7 @@
   border-left: 4px solid #8b5cf6;
 }
 
+/* ===== MAIN CONTENT ===== */
 .main-content {
   flex: 1;
   margin-left: 260px;
@@ -87,6 +89,7 @@
   gap: 24px;
 }
 
+/* ===== NOTIFICATIONS ===== */
 .notification-icon {
   position: relative;
   cursor: pointer;
@@ -113,6 +116,7 @@
   text-align: center;
 }
 
+/* ===== PROFILE DROPDOWN ===== */
 .profile-dropdown {
   position: relative;
   cursor: pointer;
@@ -142,17 +146,16 @@
   font-weight: bold;
 }
 
+/* ===== CONTENT AREA ===== */
 .content-area {
   padding: 32px;
   overflow-y: auto;
 }
 
 .section {
-   /* background-color: #FFFFFF; */
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); */
 }
 
 .section-header {
@@ -168,6 +171,7 @@
   color: #2D1B4E;
 }
 
+/* ===== SEARCH & FILTER ===== */
 .search-filter-bar {
   display: flex;
   gap: 12px;
@@ -187,13 +191,11 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #8b5cf6
+  border-color: #8b5cf6;
 }
 
 .filter-select {
-  appearance: none;            /* modern browsers */
-  -webkit-appearance: none;    /* Safari / Chrome */
-  -moz-appearance: none;       /* Firefox */
+  appearance: none;
   background-image: none;
   padding: 10px 16px;
   border: 2px solid #8b5cf6;
@@ -209,10 +211,11 @@
   border-color: #8b5cf6;
 }
 
+
+/* ===== DATA TABLE ===== */
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  overflow: hidden;
 }
 
 .data-table thead {
@@ -246,6 +249,7 @@
   color: #8b5cf6;
 }
 
+/* ===== STATUS BADGES ===== */
 .status-badge {
   display: inline-block;
   padding: 4px 12px;
@@ -253,6 +257,24 @@
   font-size: 12px;
   font-weight: 600;
   text-transform: capitalize;
+}
+
+.status-published {
+  background-color: #f1e7ff;
+  color: #7b61ff;
+}
+
+.status-upcoming {
+  background-color: #e9ddff;
+  color: #6b4ce6;
+}
+.status-completed {
+  background-color: #eafff3;
+  color: #23a55a;
+}
+.status-draft {
+  background-color: #fff8e1;
+  color: #f7b500;
 }
 
 .status-active {
@@ -267,14 +289,14 @@
 }
 
 .status-pending {
-  background-color: #D9B3FF;
-  color: #8b5cf6;
+  background-color: #fff5e6;
+  color: #ff9800;
 }
 
-.status-approved,
+/* .status-approved, */
 .status-published {
-  background-color: #8b5cf6;
-  color: #FFFFFF;
+  background-color: #e9fff2;
+  color: #1ca84d;
 }
 
 .status-rejected,
@@ -282,7 +304,13 @@
   background-color: #FFB3C1;
   color: #8B2635;
 }
-.actions-grid{
+.status-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(123, 97, 255, 0.1);
+}
+
+/* ===== ACTION BUTTONS ===== */
+.actions-grid {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
@@ -292,15 +320,14 @@
 .action-buttons {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
+  gap: 12px;  
 }
 
-/* Optional: Quick Actions section in Dashboard */
+/* ===== QUICK ACTIONS ===== */
 .quick-actions {
-  /* width: 70%; */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap:12px;
+  gap: 12px;
 }
 
 .btn {
@@ -314,56 +341,51 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+
+  
 }
 
 .btn-primary {
-  /* width: 50%; */
-  background-color: #865ee3;
+  background-color: #8b5cf6;
+  color: #FFFFFF; 
+}
+.edit-btn {
+  background-color: #8b5cf6;
   color: #FFFFFF;
+}
+.edit-btn:hover {
+  background-color: #7c2ae8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(139, 93, 198, 0.3);
+
 }
 
 .btn-primary:hover {
   background-color: #8b5cf6;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(124, 107, 165, 0.3);
-}
 
+}
 .btn-approve {
-  background-color: #8b5cf6;
-  color: #FFFFFF;
+  background-color: #e9fff2;
+  color: #1ca84d;
 }
-
 .btn-approve:hover {
-  background-color: #8b5cf6;
+  background-color: #d2ffe4;
+  box-shadow: 0 2px 8px rgba(28, 168, 77, 0.2);
 }
 
+/* Reject Button */
 .btn-reject {
-  background-color: #8b5cf6;
-  color: #ffffff;
+  background-color: #fdf2f2;
+  color: #e03131;
 }
-
 .btn-reject:hover {
-  background-color: #8b5cf6;
+  background-color: #ffe1e1;
+  box-shadow: 0 2px 8px rgba(224, 49, 49, 0.2);
 }
 
-.btn-danger {
-  background-color: #FF4757;
-  color: #FFFFFF;
-}
-
-.btn-danger:hover {
-  background-color: #E63946;
-}
-
-.btn-secondary {
-  background-color: #8b5cf6;
-  color: #ffffff;
-}
-
-.btn-secondary:hover {
-  background-color: #8b5cf6;
-}
-
+/* ===== STATS GRID ===== */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -371,13 +393,21 @@
   margin-bottom: 32px;
 }
 
+/* ===== STAT CARD (Centered Text) ===== */
 .stat-card {
-  background: linear-gradient(135deg, #8b5cf6, #8b5cf6);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, #ffffff, #fcfcfc);
   padding: 24px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  min-height: 120px;
 }
 
 .stat-card:hover {
@@ -385,23 +415,28 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
-.stat-label {
+.stat-labe {
+  color: #8b5cf6;
   font-size: 14px;
+  font-weight: bold;
   opacity: 0.9;
   margin-bottom: 8px;
 }
 
 .stat-value {
+  color: #865ee3;
   font-size: 36px;
   font-weight: bold;
-  margin-bottom: 4px;
 }
 
 .stat-icon {
-  float: right;
-  opacity: 0.7;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  opacity: 0.2;
 }
 
+/* ===== MODALS ===== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -417,12 +452,8 @@
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal {
@@ -523,6 +554,7 @@
   gap: 12px;
 }
 
+/* ===== CHART / EMPTY STATES ===== */
 .chart-container {
   height: 300px;
   margin-top: 20px;
@@ -556,10 +588,6 @@
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

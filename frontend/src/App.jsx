@@ -22,6 +22,8 @@ import ContestRegistrationPage from "./pages/ContestRegistrationPage";
 import MyContests from "./pages/MyContests";
 import ProblemList from "./pages/ProblemList";
 import Problem from "./pages/Problem";
+import EventsPage from "./pages/events";
+import ContestsPage from "./pages/contest";
 
 /* ───────────────────────── Protected wrapper ───────────────────────── */
 const ProtectedRoute = () => {
@@ -64,6 +66,8 @@ export default function App() {
             <Route path="/my-contests" element={<MyContests />} />
             <Route path="/contest/:id/problems" element={<ProblemList />} />
             <Route path="/contest/:id/problem/:problemId" element={<Problem />} />
+            <Route path="/events" element={<EventsPage />} />
+            <Route path="/contests" element={<ContestsPage />} />
           </Route>
         </Route>
 

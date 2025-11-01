@@ -106,45 +106,21 @@ const Navbar = ({ additionalLinks = [] }) => {
 
         {/* Links */}
         <div className={`navbar-menu ${isMenuOpen ? "active" : ""}`}>
-          <Link
-            to={isLoggedIn ? "/home" : "/"}
-            className={`navbar-item ${isActive("/home") || isActive("/")}`}
-          >
-            Home
-          </Link>
-
-          {isLoggedIn && (
-            <Link
-              to="/my-contests"
-              className={`navbar-item ${isActive("/my-contests")}`}
-            >
-              My Contests
-            </Link>
-          )}
-
+         
           {role === "organizer" && (
+            <>
             <Link
               to="/organizer-dashboard"
               className={`navbar-item ${isActive("/organizer-dashboard")}`}
             >
               Dashboard
             </Link>
-          )}
-
-          <a href="#events" className="navbar-item">
-            Events
-          </a>
-
-          {role === "organizer" && (
-            <Link to="/" className={`navbar-item ${isActive("/")}`}>
+             <Link to="/" className={`navbar-item ${isActive("/")}`}>
               My Events
             </Link>
+            </>
           )}
-
-          <a href="#contact" className="navbar-item">
-            Contact
-          </a>
-
+       
           {role === "admin" && (
             <>
               <Link
@@ -153,33 +129,37 @@ const Navbar = ({ additionalLinks = [] }) => {
               >
                 Dashboard
               </Link>
-              <div className="notification-icon" onClick={handleNotificationClick}>
-                <Bell size={24} />
-                {pendingCount > 0 && (
-                  <span className="notification-badge">{pendingCount}</span>
-                )}
-              </div>
             </>
           )}
 
           {role === "attendee" && (
+            <>
+             <Link
+            to={isLoggedIn ? "/home" : "/"}
+            className={`navbar-item ${isActive("/home") || isActive("/")}`}
+          >
+            Home
+          </Link>
             <Link
               to="/attendee-dashboard"
               className={`navbar-item ${isActive("/attendee-dashboard")}`}
             >
               Dashboard
             </Link>
-          )}
-
-          {role === "attendee" && (
             <Link
               to="/ticketpage"
               className={`navbar-item ${isActive("/ticketpage")}`}
             >
               My Bookings
             </Link>
+            <Link
+              to="/my-contests"
+              className={`navbar-item ${isActive("/my-contests")}`}
+            >
+              My Contests
+            </Link>
+            </>
           )}
-
           {additionalLinks.map((link, index) => (
             <Link
               key={index}

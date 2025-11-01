@@ -33,7 +33,6 @@ const UserManagement = () => {
             user.createdAt ||
             null,
         }));
-
         setUsers(formattedUsers);
         setFilteredUsers(formattedUsers);
       } catch (err) {
@@ -182,7 +181,7 @@ const UserManagement = () => {
                   <td>
                     <div className="action-buttons">
                       <button
-                        className="btn btn-secondary"
+                        className="edit-btn"
                         onClick={() => setEditingUser(user)}
                       >
                         <Edit size={14} /> Edit

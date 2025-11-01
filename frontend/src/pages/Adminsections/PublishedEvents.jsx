@@ -91,22 +91,22 @@ const PublishedEvents = () => {
       <div className="stats-grid">
         <div className="stat-card">
           <Calendar className="stat-icon" size={32} />
-          <div className="stat-label">Total Published</div>
+          <div className="stat-labe">Total Published</div>
           <div className="stat-value">{stats.total}</div>
         </div>
         <div className="stat-card">
           <Clock className="stat-icon" size={32} />
-          <div className="stat-label">Upcoming Events</div>
+          <div className="stat-labe">Upcoming Events</div>
           <div className="stat-value">{stats.upcoming}</div>
         </div>
         <div className="stat-card">
           <CheckCircle className="stat-icon" size={32} />
-          <div className="stat-label">Past Events</div>
+          <div className="stat-labe">Past Events</div>
           <div className="stat-value">{stats.past}</div>
         </div>
         <div className="stat-card">
           <CheckCircle className="stat-icon" size={32} />
-          <div className="stat-label">Total Tickets Issued</div>
+          <div className="stat-labe">Total Tickets Issued</div>
           <div className="stat-value">{stats.totalTickets}</div>
         </div>
       </div>
@@ -188,7 +188,7 @@ const PublishedEvents = () => {
                       </span>
                     </td>
                     <td>
-                      <button className="btn btn-secondary" onClick={() => setViewingEvent(event)} title="View Details">
+                      <button className="edit-btn" onClick={() => setViewingEvent(event)} title="View Details">
                         <Eye size={14} />View
                       </button>
                     </td>

@@ -1,11 +1,12 @@
-/* Wrapper for dark background compatibility */
-.contest-list-wrapper {
+/* Wrapper */
+.mycontest-wrapper {
   min-height: calc(100vh - 80px);
   padding: 40px 20px;
   background: linear-gradient(to bottom, #f7fafc 0%, #ffffff 100%);
 }
 
-.contest-list {
+/* Container */
+.mycontest-list {
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px;
@@ -15,7 +16,7 @@
 }
 
 /* Header Section */
-.contest-header {
+.mycontest-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -24,7 +25,7 @@
   border-bottom: 2px solid #eef2ff;
 }
 
-.contest-header h2 {
+.mycontest-header h2 {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
@@ -34,7 +35,7 @@
   background-clip: text;
 }
 
-.contest-count {
+.mycontest-count {
   background: linear-gradient(135deg, #eef2ff, #e0e7ff);
   color: #7c5ce0;
   padding: 8px 18px;
@@ -45,7 +46,7 @@
 }
 
 /* Loading State */
-.loading-container {
+.mycontest-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -54,45 +55,47 @@
   color: #6b7280;
 }
 
-.loading-spinner {
+.mycontest-spinner {
   width: 48px;
   height: 48px;
   border: 4px solid #eef2ff;
   border-top-color: #7c5ce0;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: mycontest-spin 0.8s linear infinite;
   margin-bottom: 16px;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+@keyframes mycontest-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Empty State */
-.empty-state {
+.mycontest-empty {
   text-align: center;
   padding: 80px 20px;
 }
 
-.empty-icon {
+.mycontest-empty-icon {
   font-size: 64px;
   margin-bottom: 20px;
   opacity: 0.5;
 }
 
-.empty-state h3 {
+.mycontest-empty h3 {
   margin: 0 0 8px;
   font-size: 22px;
   color: #0f172a;
 }
 
-.empty-state p {
+.mycontest-empty p {
   margin: 0 0 24px;
   color: #6b7280;
   font-size: 15px;
 }
 
-.browse-btn {
+.mycontest-browse-btn {
   background: linear-gradient(90deg, #7c5ce0, #9378ea);
   color: #fff;
   border: none;
@@ -104,36 +107,37 @@
   transition: all 0.3s ease;
 }
 
-.browse-btn:hover {
+.mycontest-browse-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(124, 92, 224, 0.3);
 }
 
 /* Contests Grid */
-.contests-grid {
+.mycontest-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 24px;
 }
 
 /* Contest Card */
-.contest-card {
+.mycontest-card {
   background: #fff;
   border: 1px solid #eef2ff;
   border-radius: 12px;
   overflow: hidden;
+  width: 350px;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
 }
 
-.contest-card:hover {
+.mycontest-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(124, 92, 224, 0.15);
   border-color: #c4b5fd;
 }
 
-.contest-card-header {
+.mycontest-card-header {
   padding: 20px;
   background: linear-gradient(135deg, #fafafa, #f8f9fa);
   border-bottom: 1px solid #eef2ff;
@@ -143,7 +147,7 @@
   gap: 12px;
 }
 
-.contest-card-header h3 {
+.mycontest-card-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
@@ -152,7 +156,7 @@
   flex: 1;
 }
 
-.upcoming-badge {
+.mycontest-upcoming {
   background: linear-gradient(90deg, #7c5ce0, #9378ea);
   color: #fff;
   padding: 4px 12px;
@@ -164,18 +168,18 @@
   white-space: nowrap;
 }
 
-.contest-card-body {
+.mycontest-card-body {
   padding: 20px;
   flex: 1;
 }
 
-.contest-date {
+.mycontest-date {
   display: flex;
   align-items: flex-start;
   gap: 14px;
 }
 
-.date-icon {
+.mycontest-date-icon {
   width: 40px;
   height: 40px;
   color: #7c5ce0;
@@ -185,7 +189,7 @@
   border-radius: 8px;
 }
 
-.date-label {
+.mycontest-date-label {
   font-size: 12px;
   color: #6b7280;
   text-transform: uppercase;
@@ -194,20 +198,21 @@
   margin-bottom: 4px;
 }
 
-.date-value {
+.mycontest-date-value {
   font-size: 16px;
   font-weight: 600;
   color: #0f172a;
   margin-bottom: 2px;
 }
 
-.time-value {
+.mycontest-time-value {
   font-size: 14px;
   color: #7c5ce0;
   font-weight: 500;
 }
 
-.contest-card-footer {
+/* Footer Buttons */
+.mycontest-card-footer {
   padding: 16px 20px;
   background: #fafafa;
   border-top: 1px solid #eef2ff;
@@ -215,7 +220,7 @@
   gap: 12px;
 }
 
-.enter-btn {
+.mycontest-enter-btn {
   background: linear-gradient(90deg, #7c5ce0, #9378ea);
   color: #fff;
   border: none;
@@ -232,22 +237,22 @@
   transition: all 0.3s ease;
 }
 
-.enter-btn:hover {
+.mycontest-enter-btn:hover {
   opacity: 0.95;
   transform: translateX(2px);
 }
 
-.arrow-icon {
+.mycontest-arrow-icon {
   width: 18px;
   height: 18px;
   transition: transform 0.3s ease;
 }
 
-.enter-btn:hover .arrow-icon {
+.mycontest-enter-btn:hover .mycontest-arrow-icon {
   transform: translateX(4px);
 }
 
-.unregister-btn {
+.mycontest-unregister-btn {
   background: #fff;
   color: #ef4444;
   border: 2px solid #fecaca;
@@ -264,65 +269,65 @@
   transition: all 0.3s ease;
 }
 
-.unregister-btn:hover {
+.mycontest-unregister-btn:hover {
   background: #fef2f2;
   border-color: #ef4444;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(239, 68, 68, 0.15);
 }
 
-.cross-icon {
+.mycontest-cross-icon {
   width: 18px;
   height: 18px;
   transition: transform 0.3s ease;
 }
 
-.unregister-btn:hover .cross-icon {
+.mycontest-unregister-btn:hover .mycontest-cross-icon {
   transform: rotate(90deg);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .contest-list-wrapper {
+  .mycontest-wrapper {
     padding: 20px 10px;
   }
 
-  .contest-list {
+  .mycontest-list {
     padding: 20px;
   }
 
-  .contest-header {
+  .mycontest-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
 
-  .contest-header h2 {
+  .mycontest-header h2 {
     font-size: 24px;
   }
 
-  .contests-grid {
+  .mycontest-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 
-  .empty-state {
+  .mycontest-empty {
     padding: 60px 20px;
   }
 
-  .contest-card-footer {
+  .mycontest-card-footer {
     flex-direction: column;
     gap: 8px;
   }
 
-  .enter-btn,
-  .unregister-btn {
+  .mycontest-enter-btn,
+  .mycontest-unregister-btn {
     width: 100%;
   }
 }
 
 /* Toast Notifications */
-.toast {
+.mycontest-toast {
   position: fixed;
   top: 20px;
   right: 20px;
@@ -330,7 +335,7 @@
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  animation: slideIn 0.3s ease-out;
+  animation: mycontest-slideIn 0.3s ease-out;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -338,7 +343,7 @@
   max-width: 500px;
 }
 
-@keyframes slideIn {
+@keyframes mycontest-slideIn {
   from {
     transform: translateX(400px);
     opacity: 0;
@@ -349,17 +354,17 @@
   }
 }
 
-.toast-success {
+.mycontest-toast-success {
   background: linear-gradient(135deg, #10b981, #059669);
   color: #fff;
 }
 
-.toast-error {
+.mycontest-toast-error {
   background: linear-gradient(135deg, #ef4444, #dc2626);
   color: #fff;
 }
 
-.toast-content {
+.mycontest-toast-content {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -367,7 +372,7 @@
   font-weight: 500;
 }
 
-.toast-icon {
+.mycontest-toast-icon {
   width: 24px;
   height: 24px;
   flex-shrink: 0;

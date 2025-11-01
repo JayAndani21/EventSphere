@@ -174,27 +174,27 @@ const DashboardOverview = () => {
       <div className="stats-grid">
         <div className="stat-card">
           <Users className="stat-icon" size={32} />
-          <div className="stat-label">Total Users</div>
+          <div className="stat-labe">Total Users</div>
           <div className="stat-value">{stats.totalUsers}</div>
         </div>
         <div className="stat-card">
           <Briefcase className="stat-icon" size={32} />
-          <div className="stat-label">Total Organizers</div>
+          <div className="stat-labe">Total Organizers</div>
           <div className="stat-value">{stats.totalOrganizers}</div>
         </div>
         <div className="stat-card">
           <Calendar className="stat-icon" size={32} />
-          <div className="stat-label">Pending Events</div>
+          <div className="stat-labe">Pending Events</div>
           <div className="stat-value">{stats.pendingEvents}</div>
         </div>
         <div className="stat-card">
           <CheckCircle className="stat-icon" size={32} />
-          <div className="stat-label">Total Events</div>
+          <div className="stat-labe">Total Events</div>
           <div className="stat-value">{stats.publishedEvents}</div>
         </div>
         <div className="stat-card">
           <FileText className="stat-icon" size={32} />
-          <div className="stat-label">Total Attendees</div>
+          <div className="stat-labe">Total Attendees</div>
           <div className="stat-value">{stats.totalAttendees}</div>
         </div>
       </div>

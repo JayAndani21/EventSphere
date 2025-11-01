@@ -32,6 +32,7 @@ const AttendeeDashboard = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log(response);
 
       if (response.ok) {
         const data = await response.json();
@@ -144,7 +145,7 @@ const AttendeeDashboard = () => {
                   <h3 className="category-name">{cat.name}</h3>
                   <p className="category-count">{cat.count} Available</p>
                 </div>
-                <button className="category-explore">
+                <button className="category-explore" onClick={() => navigate(`/contest?category=${cat.key}`)}>
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M5 10h10M10 5l5 5-5 5" />
                   </svg>
@@ -161,7 +162,7 @@ const AttendeeDashboard = () => {
               <h2 className="section-title">Featured Events</h2>
               <p className="section-subtitle">Join exciting events and boost your career</p>
             </div>
-            <button className="view-all-btn">
+            <button className="view-all-btn" onClick={() => navigate("/events")}>
               View All
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 10h10M10 5l5 5-5 5" />
@@ -170,62 +171,63 @@ const AttendeeDashboard = () => {
           </div>
           <div className="events-grid-four">
             {Array.isArray(events) && events.length > 0 ? (
-              events.slice(0, 4).map((event) => (
-                <div key={event._id} className="modern-event-card">
-                  <div
-                    className="event-card-image"
-                    style={{
-                      backgroundImage: `url(${
-                        event.coverImageUrl || "https://via.placeholder.com/400x225"
-                      })`,
-                    }}
-                  >
-                    <div className="event-card-overlay">
-                      <button
-                        className="quick-register-btn"
-                        onClick={() => handleRegister(event._id)}
-                      >
-                        Register Now
-                      </button>
-                    </div>
-                  </div>
-                  <div className="event-card-content">
-                    <div className="event-card-tags">
-                      <span className="event-tag online">Online</span>
-                      <span className="event-tag free">Free</span>
-                    </div>
-                    <h3 className="event-card-title">{event.eventName}</h3>
-                    <p className="event-card-organizer">
-                      by {event.organizer ? event.organizer.email : event.organizerName}
-                    </p>
-                    <div className="event-card-footer">
-                      <div className="event-card-info">
-                        <span className="info-item">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M11 1v2M5 1v2M2 5h12M3 3h10a1 1 0 011 1v9a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1z" />
-                          </svg>
-                          {formatDate(event.eventDate || event.startDate)}
-                        </span>
-                        <span className="info-item">
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M16 7A7 7 0 11 2 7a7 7 0 0114 0z" />
-                            <path d="M8 3v5l3 2" />
-                          </svg>
-                          {formatTime(event.eventDate || event.startDate)}
-                        </span>
-                      </div>
-                      <div className="attendees-count">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M11 13v-1a3 3 0 00-3-3H4a3 3 0 00-3 3v1" />
-                          <circle cx="6" cy="5" r="3" />
-                          <path d="M15 13v-1a3 3 0 00-2-2.8M11 1.1a3 3 0 010 5.8" />
-                        </svg>
-                        {event.attendeesCount || 0}
+              events
+                .filter(event => event.status !== "draft" && event.status !== "cancelled")
+                .slice(0, 4)
+                .map(event => (
+                  <div key={event._id} className="modern-event-card">
+                    <div
+                      className="event-card-image"
+                      style={{
+                        backgroundImage: `url(${event.coverImageUrl || "https://via.placeholder.com/400x225"
+                          })`,
+                      }}
+                    >
+                      <div className="event-card-overlay">
+                        <button
+                          className="quick-register-btn"
+                          onClick={() => handleRegister(event._id)}
+                        >
+                          Register Now
+                        </button>
                       </div>
                     </div>
+                    <div className="event-card-content">
+                      <div className="event-card-tags">
+                        <span className="event-tag online">{event.eventType}</span>
+                      </div>
+                      <h3 className="event-card-title">{event.eventName}</h3>
+                      <p className="event-card-organizer">
+                        by {event.organizer ? event.organizer.email : event.organizerName}
+                      </p>
+                      <div className="event-card-footer">
+                        <div className="event-card-info">
+                          <span className="info-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M11 1v2M5 1v2M2 5h12M3 3h10a1 1 0 011 1v9a1 1 0 01-1 1H3a1 1 0 01-1-1V4a1 1 0 011-1z" />
+                            </svg>
+                            {formatDate(event.date || event.startDate)}
+                          </span>
+                          <span className="info-item">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M16 7A7 7 0 11 2 7a7 7 0 0114 0z" />
+                              <path d="M8 3v5l3 2" />
+                            </svg>
+                            {formatTime(event.date)}
+                          </span>
+                        </div>
+                        <div className="attendees-count">
+                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 13v-1a3 3 0 00-3-3H4a3 3 0 00-3 3v1" />
+                            <circle cx="6" cy="5" r="3" />
+                            <path d="M15 13v-1a3 3 0 00-2-2.8M11 1.1a3 3 0 010 5.8" />
+                          </svg>
+                          {event.attendeesCount || 0}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))
             ) : (
               <div className="empty-state">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -247,7 +249,7 @@ const AttendeeDashboard = () => {
               <h2 className="section-title">Coding Contests</h2>
               <p className="section-subtitle">Challenge yourself and compete with the best</p>
             </div>
-            <button className="view-all-btn">
+            <button className="view-all-btn" onClick={() => navigate("/contest")}>
               View All
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 10h10M10 5l5 5-5 5" />
@@ -257,9 +259,9 @@ const AttendeeDashboard = () => {
           <div className="events-grid-four">
             {Array.isArray(contests) && contests.length > 0 ? (
               contests.slice(0, 4).map((contest) => (
-                <div key={contest._id} className="modern-event-card contest-card">
+                <div key={contest._id} className="modern-event-card">
                   <div
-                    className="event-card-image contest-image"
+                    className="event-card-image"
                     style={{
                       backgroundImage: "linear-gradient(135deg, #7c5ce0 0%, #9378ea 100%)",
                     }}

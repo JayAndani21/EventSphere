@@ -100,22 +100,22 @@ const Analytics = () => {
       <div className="stats-grid">
         <div className="stat-card">
           <Calendar className="stat-icon" size={32} />
-          <div className="stat-label">Total Events</div>
+          <div className="stat-labe">Total Events</div>
           <div className="stat-value">{stats.totalEvents}</div>
         </div>
         <div className="stat-card">
           <Ticket className="stat-icon" size={32} />
-          <div className="stat-label">Total Tickets</div>
+          <div className="stat-labe">Total Tickets</div>
           <div className="stat-value">{stats.totalTickets}</div>
         </div>
         <div className="stat-card">
           <Users className="stat-icon" size={32} />
-          <div className="stat-label">Active Organizers</div>
+          <div className="stat-labe">Active Organizers</div>
           <div className="stat-value">{stats.activeOrganizers}</div>
         </div>
         <div className="stat-card">
           <TrendingUp className="stat-icon" size={32} />
-          <div className="stat-label">Avg Attendance</div>
+          <div className="stat-labe">Avg Attendance</div>
           <div className="stat-value">{stats.averageAttendance.toFixed(1)}%</div>
         </div>
       </div>

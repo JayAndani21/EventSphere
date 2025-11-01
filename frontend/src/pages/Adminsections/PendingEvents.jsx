@@ -13,7 +13,6 @@ const PendingEvents = () => {
 
   const API_BASE = 'http://localhost:5000/api';
 
-  // Fetch pending/draft events from backend
   const fetchEvents = async () => {
     try {
       const res = await fetch(`${API_BASE}/events/all?status=draft`, {
@@ -40,7 +39,6 @@ const PendingEvents = () => {
     fetchEvents();
   }, []);
 
-  // Filter events by search term and type
   useEffect(() => {
     let filtered = [...events];
     if (searchTerm) {
@@ -131,7 +129,13 @@ const PendingEvents = () => {
           <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
             <Search
               size={18}
-              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#7C6BA5' }}
+              style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#7C6BA5',
+              }}
             />
             <input
               type="text"
@@ -142,7 +146,11 @@ const PendingEvents = () => {
               style={{ paddingLeft: '40px' }}
             />
           </div>
-          <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+          <select
+            className="filter-select"
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+          >
             <option value="all">All Types</option>
             <option value="offline">Offline</option>
             <option value="online">Online</option>
@@ -158,7 +166,6 @@ const PendingEvents = () => {
                 <th>Organizer</th>
                 <th>Date & Time</th>
                 <th>Capacity</th>
-                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -172,30 +179,30 @@ const PendingEvents = () => {
                     <td>{new Date(event.date).toLocaleString()}</td>
                     <td>{event.capacity}</td>
                     <td>
-                      <span className={`status-badge status-${event.status}`}>{event.status}</span>
-                    </td>
-                    <td>
                       <div className="action-buttons">
                         <button
-                          className="btn btn-secondary"
-                          onClick={() => { setViewingEvent(event); setActionType(null); }}
+                          className="edit-btn"
+                          onClick={() => {
+                            setViewingEvent(event);
+                            setActionType(null);
+                          }}
                           title="View Details"
                         >
-                          <Eye size={14} />View
+                          <Eye size={14} /> View
                         </button>
                         <button
-                          className="btn btn-approve"
+                          className="btn-approve"
                           onClick={() => openApprovalModal(event, 'approve')}
                           title="Approve"
                         >
-                          <CheckCircle size={14} />Approve
+                          <CheckCircle size={14} /> Approve
                         </button>
                         <button
-                          className="btn btn-reject"
+                          className="btn-reject"
                           onClick={() => openApprovalModal(event, 'reject')}
                           title="Reject"
                         >
-                          <X size={14} />Reject
+                          <X size={14} /> Reject
                         </button>
                       </div>
                     </td>
@@ -203,7 +210,7 @@ const PendingEvents = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '20px' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '20px' }}>
                     No pending events
                   </td>
                 </tr>
@@ -214,13 +221,29 @@ const PendingEvents = () => {
       </div>
 
       {viewingEvent && (
-        <div className="modal-overlay" onClick={() => { setViewingEvent(null); setActionType(null); }}>
+        <div
+          className="modal-overlay"
+          onClick={() => {
+            setViewingEvent(null);
+            setActionType(null);
+          }}
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">
-                {actionType ? (actionType === 'approve' ? 'Approve Event' : 'Reject Event') : 'Event Details'}
+                {actionType
+                  ? actionType === 'approve'
+                    ? 'Approve Event'
+                    : 'Reject Event'
+                  : 'Event Details'}
               </h3>
-              <button className="modal-close" onClick={() => { setViewingEvent(null); setActionType(null); }}>
+              <button
+                className="modal-close"
+                onClick={() => {
+                  setViewingEvent(null);
+                  setActionType(null);
+                }}
+              >
                 ×
               </button>
             </div>
@@ -231,7 +254,9 @@ const PendingEvents = () => {
               </div>
               <div className="modal-field">
                 <label className="modal-label">Type</label>
-                <div className="modal-value" style={{ textTransform: 'capitalize' }}>{viewingEvent.eventType}</div>
+                <div className="modal-value" style={{ textTransform: 'capitalize' }}>
+                  {viewingEvent.eventType}
+                </div>
               </div>
               <div className="modal-field">
                 <label className="modal-label">Organizer</label>
@@ -239,7 +264,9 @@ const PendingEvents = () => {
               </div>
               <div className="modal-field">
                 <label className="modal-label">Date & Time</label>
-                <div className="modal-value">{new Date(viewingEvent.date).toLocaleString()}</div>
+                <div className="modal-value">
+                  {new Date(viewingEvent.date).toLocaleString()}
+                </div>
               </div>
               <div className="modal-field">
                 <label className="modal-label">Capacity</label>
@@ -248,7 +275,9 @@ const PendingEvents = () => {
               {actionType && (
                 <div className="modal-field">
                   <label className="modal-label">
-                    {actionType === 'approve' ? 'Approval Comment (Optional)' : 'Rejection Reason (Required)'}
+                    {actionType === 'approve'
+                      ? 'Approval Comment (Optional)'
+                      : 'Rejection Reason (Required)'}
                   </label>
                   <textarea
                     className="modal-textarea"
@@ -264,25 +293,43 @@ const PendingEvents = () => {
               )}
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => { setViewingEvent(null); setActionType(null); }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => {
+                  setViewingEvent(null);
+                  setActionType(null);
+                }}
+              >
                 Cancel
               </button>
               {actionType === 'approve' && (
-                <button className="btn btn-approve" onClick={() => handleApprove(viewingEvent)}>
+                <button
+                  className="btn btn-approve"
+                  onClick={() => handleApprove(viewingEvent)}
+                >
                   <CheckCircle size={16} /> Approve Event
                 </button>
               )}
               {actionType === 'reject' && (
-                <button className="btn btn-reject" onClick={() => handleReject(viewingEvent)}>
+                <button
+                  className="btn btn-reject"
+                  onClick={() => handleReject(viewingEvent)}
+                >
                   <X size={16} /> Reject Event
                 </button>
               )}
               {!actionType && (
                 <>
-                  <button className="btn btn-approve" onClick={() => setActionType('approve')}>
+                  <button
+                    className="btn btn-approve"
+                    onClick={() => setActionType('approve')}
+                  >
                     <CheckCircle size={16} /> Approve
                   </button>
-                  <button className="btn btn-reject" onClick={() => setActionType('reject')}>
+                  <button
+                    className="btn btn-reject"
+                    onClick={() => setActionType('reject')}
+                  >
                     <X size={16} /> Reject
                   </button>
                 </>

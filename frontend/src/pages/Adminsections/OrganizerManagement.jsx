@@ -128,6 +128,7 @@ const OrganizerManagement = () => {
             <option value="draft">Draft</option>
             <option value="published">Published</option>
             <option value="completed">Completed</option>
+            <option value="Rejected">Rejected</option>
           </select>
         </div>
 
@@ -157,7 +158,7 @@ const OrganizerManagement = () => {
                   <td>{new Date(org.created_at).toLocaleDateString()}</td>
                   <td>
                     <button
-                      className="btn btn-secondary"
+                      className="edit-btn"
                       onClick={() => setViewingEvents(org)}
                     >
                       <Eye size={14} /> View

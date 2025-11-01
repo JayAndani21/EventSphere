@@ -54,18 +54,18 @@ const HomePage = () => {
   return (
     <div className="homepage">
       {/* Hero Section */}
-      <section className="hero-section">
+      <section className="hero-sec">
         <ParticlesBackground />
         <div className="hero-container">
           <div className="hero-content">
             <div className="hero-text">
-              <h1 className="hero-title">
+              <h1 className="hero-tit">
                 Plan Smarter.<br />
                 Manage Better.<br />
                 Celebrate<br />
                 Together.
               </h1>
-              <p className="hero-description">
+              <p className="hero-des">
                 EventSphere streamlines event planning with digital ticketing,
                 real-time notifications, AI assistance, and seamless calendar
                 integration for unforgettable experiences.
