@@ -306,6 +306,7 @@
   background: var(--card-bg);
   border-radius: 16px;
   overflow: hidden;
+  width: 280px;
   box-shadow: var(--card-shadow);
   transition: all var(--transition-speed) ease;
   display: flex;

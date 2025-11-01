@@ -87,11 +87,13 @@ const AttendeeDashboard = () => {
   };
 
   const categories = [
-    { name: "Hackathons", icon: "💻", color: "#7c5ce0", count: events.filter(e => e.category === "hackathon").length },
-    { name: "Coding Contests", icon: "🏆", color: "#06b6d4", count: contests.length },
-    { name: "Workshops", icon: "🎓", color: "#10b981", count: events.filter(e => e.category === "workshop").length },
-    { name: "College Events", icon: "🎯", color: "#f59e0b", count: events.filter(e => e.category === "college").length },
-  ];
+  { key: "hackathon", name: "Hackathons", icon: "💻", color: "#7c5ce0", count: events.filter(e => e.category === "Hackathon"&& e.status==="published").length },
+  { key: "seminar", name: "Seminars", icon: "🎤", color: "#8b5cf6", count: events.filter(e => e.category === "Seminar"&&e.status==="published").length },
+  { key: "workshop", name: "Workshops", icon: "🎓", color: "#10b981", count: events.filter(e => e.category === "Workshop"&&e.status==="published").length },
+  { key: "concert", name: "Concerts", icon: "🎵", color: "#ef4444", count: events.filter(e => e.category === "Concert"&&e.status==="published").length },
+
+];
+
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -137,24 +139,24 @@ const AttendeeDashboard = () => {
           <h2 className="section-title">Browse by Category</h2>
           <div className="categories-grid">
             {categories.map((cat) => (
-              <div key={cat.name} className="category-card" style={{ "--category-color": cat.color }}>
+              <div
+                key={cat.name}
+                className="category-card"
+                style={{ "--category-color": cat.color }}
+                onClick={() => navigate(`/events?category=${cat.key}`)}
+              >
                 <div className="category-icon-wrapper">
                   <span className="category-icon">{cat.icon}</span>
                 </div>
+
                 <div className="category-content">
                   <h3 className="category-name">{cat.name}</h3>
                   <p className="category-count">{cat.count} Available</p>
                 </div>
-                <button className="category-explore" onClick={() => navigate(`/contest?category=${cat.key}`)}>
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 10h10M10 5l5 5-5 5" />
-                  </svg>
-                </button>
               </div>
             ))}
           </div>
         </section>
-
         {/* Events Section */}
         <section className="content-section">
           <div className="section-header">
@@ -249,7 +251,7 @@ const AttendeeDashboard = () => {
               <h2 className="section-title">Coding Contests</h2>
               <p className="section-subtitle">Challenge yourself and compete with the best</p>
             </div>
-            <button className="view-all-btn" onClick={() => navigate("/contest")}>
+            <button className="view-all-btn" onClick={() => navigate("/contests")}>
               View All
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 10h10M10 5l5 5-5 5" />
