@@ -923,7 +923,7 @@ export default function CreateContest({ onSubmit }) {
                     registrationDeadline: form.registrationRequired
                       ? toISODate(form.registrationDeadline)
                       : undefined, // Backend handles empty registrationDeadline
-                    status: "published",
+                    status: "draft",
                     isActive: true,
                     // Exclude backend-managed fields
                     stats: undefined,

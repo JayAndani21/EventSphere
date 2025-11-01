@@ -1,8 +1,36 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Editor from "@monaco-editor/react";
-import { Play, Send, RotateCcw, Settings, ChevronDown, ChevronRight, CheckCircle, XCircle, Clock, Code2 } from "lucide-react";
+import { Play, Send, RotateCcw, Settings, ChevronDown, ChevronRight, CheckCircle, XCircle, Clock, Code2, Eye, X } from "lucide-react";
 import "../styles/Problem.css";
+
+const languageOptions = [
+  { 
+    value: "cpp", 
+    label: "C++", 
+    template: "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    // Write your code here\n    \n    return 0;\n}" 
+  },
+  { 
+    value: "python", 
+    label: "Python", 
+    template: "# Write your code here\n\n" 
+  },
+  { 
+    value: "javascript", 
+    label: "JavaScript", 
+    template: "// Write your code here\n\nprocess.stdin.resume();\nprocess.stdin.setEncoding('utf8');\n\nlet input = '';\nprocess.stdin.on('data', function(chunk) {\n    input += chunk;\n});\n\nprocess.stdin.on('end', function() {\n    // Your code here\n    \n});" 
+  },
+  { 
+    value: "java", 
+    label: "Java", 
+    template: "import java.util.*;\nimport java.io.*;\n\nclass Main {\n    public static void main(String[] args) throws IOException {\n        // Write your code here\n        \n    }\n}" 
+  },
+];
+
+const getTemplateForLanguage = (lang) => {
+  const langOption = languageOptions.find(l => l.value === lang);
+  return langOption ? langOption.template : "";
+};
 
 const Problem = () => {
   const { id, problemId } = useParams();
@@ -20,13 +48,10 @@ const Problem = () => {
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [expandedHints, setExpandedHints] = useState([]);
   const [testResultTab, setTestResultTab] = useState("testcase");
-
-  const languageOptions = [
-    { value: "cpp", label: "C++", template: "class Solution {\npublic:\n    int missingMultiple(vector<int>& nums, int k) {\n        // Write your code here\n    }\n};" },
-    { value: "python", label: "Python", template: "class Solution:\n    def missingMultiple(self, nums: List[int], k: int) -> int:\n        # Write your code here\n        pass" },
-    { value: "javascript", label: "JavaScript", template: "/**\n * @param {number[]} nums\n * @param {number} k\n * @return {number}\n */\nvar missingMultiple = function(nums, k) {\n    // Write your code here\n};" },
-    { value: "java", label: "Java", template: "class Solution {\n    public int missingMultiple(int[] nums, int k) {\n        // Write your code here\n    }\n}" },
-  ];
+  const [submissionHistory, setSubmissionHistory] = useState([]);
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [showSubmissionModal, setShowSubmissionModal] = useState(false);
+  const [editorialLanguage, setEditorialLanguage] = useState("cpp");
 
   const themeOptions = [
     { value: "vs-dark", label: "Dark" },
@@ -46,11 +71,22 @@ const Problem = () => {
 
   useEffect(() => {
     if (problem) {
-      const template = problem.solutions?.[language] || languageOptions.find(l => l.value === language)?.template || "";
-      setCode(template);
+      const newCode = getTemplateForLanguage(language);
+      setCode(newCode);
+    } else {
+      setCode(getTemplateForLanguage(language));
     }
   }, [language, problem]);
 
+  // Set initial editorial language when problem loads
+  useEffect(() => {
+    if (problem?.solutions && Object.keys(problem.solutions).length > 0) {
+      const firstLang = Object.keys(problem.solutions)[0];
+      setEditorialLanguage(firstLang);
+    }
+  }, [problem]);
+
+  // ---------------- FETCH PROBLEM ----------------
   const fetchProblem = async () => {
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -60,13 +96,19 @@ const Problem = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/questions/single/${problemId}`);
+      const res = await fetch(`http://localhost:5000/api/questions/single/${problemId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (res.ok) {
         const data = await res.json();
-        setProblem(data.problem || data);
-        const initialLang = "cpp";
-        setLanguage(initialLang);
-        setCode(data.solutions?.[initialLang] || languageOptions[0].template);
+        const problemData = data.problem || data;
+        setProblem(problemData);
+        
+        // Set initial code for C++
+        const initialCode = problemData.solutions?.cpp || getTemplateForLanguage("cpp");
+        setCode(initialCode);
+        
+        fetchSubmissionHistory();
       } else {
         const data = await res.json();
         setError(data.message || "Failed to load problem");
@@ -79,35 +121,154 @@ const Problem = () => {
     }
   };
 
+  // ---------------- FETCH SUBMISSIONS ----------------
+  const fetchSubmissionHistory = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/submissions/my/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+
+      if (res.ok) setSubmissionHistory(data || []);
+    } catch (err) {
+      console.error("Error fetching submissions:", err);
+    }
+  };
+
+  // ---------------- VIEW SUBMISSION CODE ----------------
+  const handleViewSubmission = (submission) => {
+    setSelectedSubmission(submission);
+    setShowSubmissionModal(true);
+  };
+
+  const closeSubmissionModal = () => {
+    setShowSubmissionModal(false);
+    setSelectedSubmission(null);
+  };
+
+  // ---------------- RUN CODE ----------------
   const handleRun = async () => {
+    if (!problem) return;
     setIsRunning(true);
     setTestResultTab("result");
-    setTimeout(() => {
-      setTestResults({
-        passed: 1,
-        total: problem?.sampleTestCases?.length || 1,
-        cases: problem?.sampleTestCases?.map((tc, i) => ({
-          id: i + 1,
-          passed: i === 0,
-          input: tc.input,
-          expected: tc.output,
-          actual: i === 0 ? tc.output : "Wrong Answer"
-        }))
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const testCase = problem.sampleTestCases[selectedTestCase];
+      const payload = {
+        language,
+        code,
+        stdin: testCase.input,
+      };
+
+      const res = await fetch("http://localhost:5000/api/submissions/run", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
       });
+
+      const data = await res.json();
+
+      if (res.ok && data.output !== undefined) {
+        const output = data.output.trim();
+        const expected = testCase.output.trim();
+        const passed = output === expected;
+
+        setTestResults({
+          passed: passed ? 1 : 0,
+          total: 1,
+          cases: [{
+            id: 1,
+            passed,
+            input: testCase.input,
+            expected,
+            actual: output || "No Output",
+          }],
+        });
+      } else {
+        setTestResults({
+          passed: 0,
+          total: 1,
+          cases: [{
+            id: 1,
+            passed: false,
+            input: testCase.input,
+            expected: testCase.output,
+            actual: data.output || "Error Running Code",
+          }],
+        });
+      }
+    } catch (err) {
+      console.error("Run Code Error:", err);
+      setTestResults({
+        passed: 0,
+        total: 1,
+        cases: [{
+          id: 1,
+          passed: false,
+          input: problem.sampleTestCases[selectedTestCase].input,
+          expected: problem.sampleTestCases[selectedTestCase].output,
+          actual: "Execution Failed",
+        }],
+      });
+    } finally {
       setIsRunning(false);
-    }, 1500);
+    }
   };
 
+  // ---------------- SUBMIT CODE ----------------
   const handleSubmit = async () => {
+    if (!problem) return;
     setIsRunning(true);
-    setTimeout(() => {
-      alert("Solution submitted! (This is a demo)");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const payload = { contestId: id, problemId, code, language };
+
+    try {
+      const res = await fetch("http://localhost:5000/api/submissions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(`✅ Submission Successful!\nVerdict: ${data.verdict}\nScore: ${data.score}`);
+        fetchSubmissionHistory();
+        setActiveTab("submissions");
+      } else {
+        console.error("Submission failed:", data);
+        alert(`❌ Submission Failed: ${data.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Submit Error:", err);
+      alert("An error occurred while submitting your code.");
+    } finally {
       setIsRunning(false);
-    }, 1000);
+    }
   };
 
+  // ---------------- UTILITIES ----------------
   const handleReset = () => {
-    const template = problem.solutions?.[language] || languageOptions.find(l => l.value === language)?.template || "";
+    const template = problem?.solutions?.[language] || getTemplateForLanguage(language);
     setCode(template);
   };
 
@@ -162,7 +323,7 @@ const Problem = () => {
             </button>
             <button 
               className={`solution-nav-tab ${activeTab === "submissions" ? "solution-nav-tab-active" : ""}`}
-              onClick={() => setActiveTab("submissions")}
+              onClick={() => { setActiveTab("submissions"); fetchSubmissionHistory(); }}
             >
               Submissions
             </button>
@@ -257,7 +418,45 @@ const Problem = () => {
                 <h2>Editorial</h2>
                 <div className="solution-editorial-body">
                   {problem?.editorial ? (
-                    <p>{problem.editorial}</p>
+                    <>
+                      <p>{problem.editorial}</p>
+                      
+                      {problem?.solutions && Object.keys(problem.solutions).length > 0 && (
+                        <div className="solution-code-section">
+                          <h3 className="solution-section-title">Solution Code</h3>
+                          <div className="solution-language-tabs">
+                            {Object.keys(problem.solutions).map((lang) => (
+                              <button
+                                key={lang}
+                                className={`solution-lang-tab ${editorialLanguage === lang ? 'solution-lang-tab-active' : ''}`}
+                                onClick={() => setEditorialLanguage(lang)}
+                              >
+                                {languageOptions.find(l => l.value === lang)?.label || lang}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="solution-code-display">
+                            <Editor
+                              height="400px"
+                              language={editorialLanguage === "cpp" ? "cpp" : editorialLanguage}
+                              value={problem.solutions[editorialLanguage] || "Solution not available for this language"}
+                              theme={editorTheme}
+                              options={{
+                                readOnly: true,
+                                minimap: { enabled: false },
+                                fontSize: 14,
+                                lineNumbers: "on",
+                                scrollBeyondLastLine: false,
+                                automaticLayout: true,
+                                tabSize: 2,
+                                wordWrap: "on",
+                                fontFamily: "'Consolas', 'Monaco', 'Courier New', monospace",
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <p className="solution-empty-text">Editorial not available yet.</p>
                   )}
@@ -274,8 +473,47 @@ const Problem = () => {
 
             {activeTab === "submissions" && (
               <div className="solution-history-panel">
-                <h2>Submissions</h2>
-                <p className="solution-empty-text">Your submission history will appear here.</p>
+                <h2>Your Submissions</h2>
+                {submissionHistory.length > 0 ? (
+                  <div className="submission-list">
+                    {submissionHistory.map((sub, idx) => (
+                      <div key={sub._id} className="submission-card">
+                        <div className="submission-card-header">
+                          <div className="submission-card-left">
+                            <span className="submission-number">#{idx + 1}</span>
+                            <span className="submission-language">{sub.language}</span>
+                            <span 
+                              className={`submission-verdict ${sub.verdict === "Accepted" ? "submission-verdict-accepted" : "submission-verdict-failed"}`}
+                            >
+                              {sub.verdict === "Accepted" ? <CheckCircle size={14} /> : <XCircle size={14} />}
+                              {sub.verdict}
+                            </span>
+                          </div>
+                          <button 
+                            className="submission-view-button"
+                            onClick={() => handleViewSubmission(sub)}
+                            title="View Code"
+                          >
+                            <Eye size={16} />
+                            View Code
+                          </button>
+                        </div>
+                        <div className="submission-card-body">
+                          <div className="submission-info-item">
+                            <span className="submission-info-label">Score:</span>
+                            <span className="submission-info-value">{sub.score}</span>
+                          </div>
+                          <div className="submission-info-item">
+                            <span className="submission-info-label">Submitted:</span>
+                            <span className="submission-info-value">{new Date(sub.createdAt).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="solution-empty-text">No submissions yet. Try submitting your code!</p>
+                )}
               </div>
             )}
           </div>
@@ -492,6 +730,69 @@ const Problem = () => {
           </div>
         </div>
       </div>
+
+      {/* Submission Code Modal */}
+      {showSubmissionModal && selectedSubmission && (
+        <div className="submission-modal-overlay" onClick={closeSubmissionModal}>
+          <div className="submission-modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="submission-modal-header">
+              <div className="submission-modal-title">
+                <Code2 size={20} />
+                <span>Submission #{submissionHistory.findIndex(s => s._id === selectedSubmission._id) + 1}</span>
+              </div>
+              <button 
+                className="submission-modal-close" 
+                onClick={closeSubmissionModal}
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="submission-modal-info">
+              <div className="submission-modal-info-item">
+                <span className="submission-modal-info-label">Language:</span>
+                <span className="submission-modal-info-value">{selectedSubmission.language}</span>
+              </div>
+              <div className="submission-modal-info-item">
+                <span className="submission-modal-info-label">Verdict:</span>
+                <span 
+                  className={`submission-modal-verdict ${selectedSubmission.verdict === "Accepted" ? "submission-modal-verdict-accepted" : "submission-modal-verdict-failed"}`}
+                >
+                  {selectedSubmission.verdict === "Accepted" ? <CheckCircle size={14} /> : <XCircle size={14} />}
+                  {selectedSubmission.verdict}
+                </span>
+              </div>
+              <div className="submission-modal-info-item">
+                <span className="submission-modal-info-label">Score:</span>
+                <span className="submission-modal-info-value">{selectedSubmission.score}</span>
+              </div>
+              <div className="submission-modal-info-item">
+                <span className="submission-modal-info-label">Submitted:</span>
+                <span className="submission-modal-info-value">{new Date(selectedSubmission.createdAt).toLocaleString()}</span>
+              </div>
+            </div>
+            <div className="submission-modal-code">
+              <Editor
+                height="500px"
+                language={selectedSubmission.language === "cpp" ? "cpp" : selectedSubmission.language}
+                value={selectedSubmission.code}
+                theme="vs-dark"
+                options={{
+                  readOnly: true,
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  lineNumbers: "on",
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 2,
+                  wordWrap: "on",
+                  fontFamily: "'Consolas', 'Monaco', 'Courier New', monospace",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

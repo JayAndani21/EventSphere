@@ -26,6 +26,7 @@ export default function EventForm() {
 
   const [uploading, setUploading] = useState(false);
   const mealChoices = ["Breakfast", "Lunch", "Dinner", "Snacks", "Beverages"];
+  const categoryOptions = ["Hackathon", "Seminar", "Workshop", "Conference", "Meetup", "Training", "Concert"];
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
@@ -81,6 +82,7 @@ export default function EventForm() {
     const {
       eventName,
       eventType,
+      category,
       date,
       time,
       organizerName,
@@ -89,10 +91,12 @@ export default function EventForm() {
       coverImageUrl,
       ticketType,
       ticketPrice,
+      capacity,
     } = formData;
 
     if (!eventName.trim()) return "Event Name is required.";
-    if (!eventType) return "Event Type is required.";
+    if (!eventType) return "Event Mode is required.";
+    if (!category) return "Category is required.";
     if (!date) return "Date is required.";
     if (!time) return "Time is required.";
     if (!organizerName.trim()) return "Organizer Name is required.";
@@ -100,8 +104,14 @@ export default function EventForm() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(organizerEmail)) return "Invalid email format.";
     if (!organizerPhone.trim()) return "Organizer Phone is required.";
     if (!/^\d{10}$/.test(organizerPhone)) return "Phone number must be 10 digits.";
-    if (eventType === "Offline" && !coverImageUrl) return "Please upload a cover image.";
-    if (eventType === "Offline" && ticketType === "Paid" && !ticketPrice) return "Ticket price is required for paid events.";
+    if (!ticketType) return "Ticket Type is required.";
+    if (ticketType === "Paid" && !ticketPrice) return "Ticket price is required for paid events.";
+    if (!coverImageUrl) return "Please upload a cover image.";
+    if (!capacity) return "Capacity is required.";
+    if (eventType === "Offline" && this.mealOptions && this.mealOptions.length === 0) {
+      // Optional: Add this validation if you want to require meal options for offline events
+      // return "Please select at least one meal option for offline events.";
+    }
 
     return null;
   };
@@ -174,9 +184,9 @@ export default function EventForm() {
           </label>
 
           <label>
-            Event Type:
+            Event Mode:
             <select name="eventType" value={formData.eventType} onChange={handleChange} required>
-              <option value="">Select Type</option>
+              <option value="">Select Mode</option>
               <option value="Online">Online</option>
               <option value="Offline">Offline</option>
             </select>
@@ -184,7 +194,14 @@ export default function EventForm() {
 
           <label>
             Category:
-            <input type="text" name="category" value={formData.category} onChange={handleChange} placeholder="Eg. Technology, Music, Business" />
+            <select name="category" value={formData.category} onChange={handleChange} required>
+              <option value="">Select Category</option>
+              {categoryOptions.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
           </label>
 
           <div className="inline-group">
@@ -198,6 +215,47 @@ export default function EventForm() {
               <input type="time" name="time" value={formData.time} onChange={handleChange} required />
             </label>
           </div>
+        </section>
+
+        {/* Ticket Type (for both Online and Offline) */}
+        <section>
+          <h3>Ticket Information</h3>
+          <div className="inline-group">
+            <label>
+              Ticket Type:
+              <select name="ticketType" value={formData.ticketType} onChange={handleChange} required>
+                <option value="">Select Type</option>
+                <option value="Paid">Paid</option>
+                <option value="Unpaid">Unpaid</option>
+              </select>
+            </label>
+
+            {isPaid && (
+              <label>
+                Ticket Price (₹):
+                <input type="number" name="ticketPrice" value={formData.ticketPrice} onChange={handleChange} min="0" required />
+              </label>
+            )}
+          </div>
+        </section>
+
+        {/* Event Cover Image - Required for ALL events */}
+        <section>
+          <h3>Event Cover Image</h3>
+          <input type="file" name="coverImage" onChange={handleChange} accept="image/*" />
+          {uploading && <p>Uploading image...</p>}
+          {formData.coverImageUrl && (
+            <img src={formData.coverImageUrl} alt="Cover Preview" style={{ width: "200px", marginTop: "10px" }} />
+          )}
+        </section>
+
+        {/* Capacity - Required for ALL events */}
+        <section>
+          <h3>Event Capacity</h3>
+          <label>
+            Capacity:
+            <input type="number" name="capacity" value={formData.capacity} onChange={handleChange} min="1" required />
+          </label>
         </section>
 
         {/* Offline Sections */}
@@ -228,32 +286,6 @@ export default function EventForm() {
             </section>
 
             <section>
-              <h3>Ticket & Capacity</h3>
-              <div className="inline-group">
-                <label>
-                  Capacity:
-                  <input type="number" name="capacity" value={formData.capacity} onChange={handleChange} min="1" />
-                </label>
-
-                <label>
-                  Ticket Type:
-                  <select name="ticketType" value={formData.ticketType} onChange={handleChange}>
-                    <option value="">Select Type</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Unpaid">Unpaid</option>
-                  </select>
-                </label>
-              </div>
-
-              {isPaid && (
-                <label>
-                  Ticket Price (₹):
-                  <input type="number" name="ticketPrice" value={formData.ticketPrice} onChange={handleChange} min="0" />
-                </label>
-              )}
-            </section>
-
-            <section>
               <h3>Catering Options</h3>
               <div className="checkbox-group">
                 {mealChoices.map((option) => (
@@ -263,15 +295,6 @@ export default function EventForm() {
                   </label>
                 ))}
               </div>
-            </section>
-
-            <section>
-              <h3>Event Cover Image</h3>
-              <input type="file" name="coverImage" onChange={handleChange} />
-              {uploading && <p>Uploading image...</p>}
-              {formData.coverImageUrl && (
-                <img src={formData.coverImageUrl} alt="Cover Preview" style={{ width: "200px", marginTop: "10px" }} />
-              )}
             </section>
           </>
         )}
